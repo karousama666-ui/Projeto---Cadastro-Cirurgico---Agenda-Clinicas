@@ -203,7 +203,7 @@ def editar_cirurgia():
     entrada_procedimento.insert(0, valores[6])
 
 def buscar_paciente():
-    termo_busca = entrada_busca.get().lower()
+    nome_busca = entrada_busca.get().lower()
 
     for item in tabela.get_children():
         tabela.delete(item)
