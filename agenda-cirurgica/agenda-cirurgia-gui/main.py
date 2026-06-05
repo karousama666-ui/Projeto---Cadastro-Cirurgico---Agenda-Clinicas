@@ -1,8 +1,11 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 import json
 
 cirurgias = []
+indice_edicao = None
+
 def salvar_dados():
 
     with open("cirurgias.json", "w", encoding="utf-8") as arquivo:
@@ -16,7 +19,7 @@ def salvar_dados():
 
 janela = tk.Tk()
 janela.title("Agenda Cirúrgica")
-janela.geometry("1200x700")
+janela.geometry("1920x1080")
 
 # Título
 
@@ -72,6 +75,13 @@ tk.Label(janela, text="Procedimento:").pack()
 entrada_procedimento = tk.Entry(janela, width=40)
 entrada_procedimento.pack()
 
+# Campo de Busca
+
+tk.Label(janela, text="Buscar por Paciente:").pack()
+
+entrada_busca = tk.Entry(janela, width=40)
+entrada_busca.pack()
+
 def cadastrar():
     paciente = entrada_paciente.get()
     medico = entrada_medico.get()
@@ -101,10 +111,29 @@ def cadastrar():
     }
     
     
+    global indice_edicao
+    print("Índice de Edição: ", indice_edicao)
     
-    cirurgias.append(cirurgia)
+    if indice_edicao is not None:
+        cirurgias[indice_edicao] = cirurgia
+        indice_edicao = None
+    else:
+        cirurgias.append(cirurgia)
+
     salvar_dados()
     atualizar_tabela()
+
+    entrada_paciente.delete(0, tk.END)
+    entrada_medico.delete(0, tk.END)
+    entrada_hospital.delete(0, tk.END)
+    entrada_convenio.delete(0, tk.END)
+    entrada_data.delete(0, tk.END)
+    entrada_horario.delete(0, tk.END)
+    entrada_procedimento.delete(0, tk.END)
+
+    from tkinter import messagebox
+    messagebox.showinfo("Sucesso", "Cirurgia cadastrada com sucesso!")
+
     print(cirurgias)
 
 def carregar_dados():
@@ -124,8 +153,90 @@ def carregar_dados():
 cirurgias = []
 carregar_dados()
 
+def excluir_cirurgia():
+    
+    item_selecionado = tabela.selection()
+
+    if not item_selecionado:
+        print("Nenhuma cirurgia selecionada para exclusão.")
+        return
+    
+    valores = tabela.item(item_selecionado [0], "values")
+    
+    for cirurgia in cirurgias:
+        if (cirurgia["paciente"] == valores[0]):
+            cirurgias.remove(cirurgia)
+            break
+    
+    salvar_dados()
+    atualizar_tabela()
+
+    messagebox.showinfo("Sucesso", "Cirurgia excluída com sucesso!")
+
+def editar_cirurgia():
+    item_selecionado = tabela.selection()
+
+    if not item_selecionado:
+        print("Nenhuma cirurgia selecionada para edição.")
+        return
+    
+    valores = tabela.item(item_selecionado[0], "values")
+
+
+    global indice_edicao
+    indice_edicao = tabela.index(item_selecionado[0])
+    print("Editando índice: ", indice_edicao)
+
+    entrada_paciente.delete(0, tk.END)
+    entrada_paciente.insert(0, valores[0])  
+    entrada_medico.delete(0, tk.END)
+    entrada_medico.insert(0, valores[1])
+    entrada_hospital.delete(0, tk.END)
+    entrada_hospital.insert(0, valores[2])
+    entrada_convenio.delete(0, tk.END)
+    entrada_convenio.insert(0, valores[3])
+    entrada_data.delete(0, tk.END)
+    entrada_data.insert(0, valores[4])
+    entrada_horario.delete(0, tk.END)
+    entrada_horario.insert(0, valores[5])
+    entrada_procedimento.delete(0, tk.END)
+    entrada_procedimento.insert(0, valores[6])
+
+def buscar_paciente():
+    termo_busca = entrada_busca.get().lower()
+
+    for item in tabela.get_children():
+        tabela.delete(item)
+
+    for cirurgia in cirurgias:
+        if nome_busca in cirurgia["paciente"].lower():
+            tabela.insert("", "end", values=(
+                cirurgia["paciente"],
+                cirurgia["medico"],
+                cirurgia["hospital"],
+                cirurgia["convenio"],
+                cirurgia["data"],
+                cirurgia["horario"],
+                cirurgia["procedimento"]
+            ))
+
+    
+    
+    
+
 botao_cadastrar = tk.Button(janela, text="Cadastrar", command=cadastrar)
 botao_cadastrar.pack(pady=10)   
+
+botao_excluir = tk.Button(janela, text="Excluir Cirurgia",
+                          command=excluir_cirurgia)
+botao_excluir.pack(pady=5)
+
+botao_editar = tk.Button(janela, text="Editar Cirurgia",
+                         command=editar_cirurgia)
+botao_editar.pack(pady=5)
+
+botao_buscar = tk.Button(janela, text="Buscar", command=buscar_paciente)
+botao_buscar.pack(pady=5)
 
 tabela = ttk.Treeview(janela, columns=("Paciente", "Médico", "Hospital", "Convênio", "Data", "Horário", "Procedimento"), show="headings")
 tabela.heading("Paciente", text="Paciente")
@@ -155,6 +266,8 @@ def atualizar_tabela():
             cirurgia["procedimento"]
         ))
 atualizar_tabela()
+
+
 
 janela.mainloop()
 
