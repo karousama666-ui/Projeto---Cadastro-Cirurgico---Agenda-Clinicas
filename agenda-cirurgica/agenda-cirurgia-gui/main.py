@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 import json
 
 cirurgias = []
@@ -15,7 +16,7 @@ def salvar_dados():
 
 janela = tk.Tk()
 janela.title("Agenda Cirúrgica")
-janela.geometry("600x400")
+janela.geometry("1200x700")
 
 # Título
 
@@ -103,6 +104,7 @@ def cadastrar():
     
     cirurgias.append(cirurgia)
     salvar_dados()
+    atualizar_tabela()
     print(cirurgias)
 
 def carregar_dados():
@@ -125,6 +127,34 @@ carregar_dados()
 botao_cadastrar = tk.Button(janela, text="Cadastrar", command=cadastrar)
 botao_cadastrar.pack(pady=10)   
 
+tabela = ttk.Treeview(janela, columns=("Paciente", "Médico", "Hospital", "Convênio", "Data", "Horário", "Procedimento"), show="headings")
+tabela.heading("Paciente", text="Paciente")
+tabela.heading("Médico", text="Médico")
+tabela.heading("Hospital", text="Hospital")
+tabela.heading("Convênio", text="Convênio")
+tabela.heading("Data", text="Data")
+tabela.heading("Horário", text="Horário")  
+tabela.heading("Procedimento", text="Procedimento")
+
+tabela.pack(pady=10)
+print("Tabela criada")
+
+def atualizar_tabela():
+
+    for item in tabela.get_children():
+        tabela.delete(item)
+
+    for cirurgia in cirurgias:
+        tabela.insert("", "end", values=(
+            cirurgia["paciente"],
+            cirurgia["medico"],
+            cirurgia["hospital"],
+            cirurgia["convenio"],
+            cirurgia["data"],
+            cirurgia["horario"],
+            cirurgia["procedimento"]
+        ))
+atualizar_tabela()
 
 janela.mainloop()
 
