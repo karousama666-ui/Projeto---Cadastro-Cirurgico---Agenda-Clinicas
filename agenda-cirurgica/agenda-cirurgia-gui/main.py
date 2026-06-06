@@ -82,6 +82,8 @@ tk.Label(janela, text="Buscar por Paciente:").pack()
 entrada_busca = tk.Entry(janela, width=40)
 entrada_busca.pack()
 
+
+
 def cadastrar():
     paciente = entrada_paciente.get()
     medico = entrada_medico.get()
@@ -220,8 +222,38 @@ def buscar_paciente():
                 cirurgia["procedimento"]
             ))
 
+def mostrar_todos():
+    atualizar_tabela()
+    entrada_busca.delete(0, tk.END)    
     
-    
+def buscar_em_tempo_real(event=None):
+    nome_busca = entrada_busca.get().lower()
+    for item in tabela.get_children():
+        tabela.delete(item)
+        
+    for cirurgia in cirurgias:
+        if nome_busca == "" or nome_busca in cirurgia["paciente"].lower():
+                tabela.insert("", "end", values=(
+                    cirurgia["paciente"],
+                    cirurgia["medico"],
+                    cirurgia["hospital"],
+                    cirurgia["convenio"],
+                    cirurgia["data"],
+                    cirurgia["horario"],
+                    cirurgia["procedimento"]
+                ))
+
+    # Widgets
+
+tk.Label(janela, text="Buscar Paciente").pack()
+
+entrada_busca = tk.Entry(janela, width=40)
+entrada_busca.pack()
+
+entrada_busca.bind(
+    "<KeyRelease>",
+    buscar_em_tempo_real
+)
     
 
 botao_cadastrar = tk.Button(janela, text="Cadastrar", command=cadastrar)
@@ -238,6 +270,9 @@ botao_editar.pack(pady=5)
 botao_buscar = tk.Button(janela, text="Buscar", command=buscar_paciente)
 botao_buscar.pack(pady=5)
 
+botao_mostrar_todos = tk.Button(janela, text="Mostrar Todos", command=mostrar_todos)
+botao_mostrar_todos.pack(pady=5)
+
 tabela = ttk.Treeview(janela, columns=("Paciente", "Médico", "Hospital", "Convênio", "Data", "Horário", "Procedimento"), show="headings")
 tabela.heading("Paciente", text="Paciente")
 tabela.heading("Médico", text="Médico")
@@ -247,8 +282,13 @@ tabela.heading("Data", text="Data")
 tabela.heading("Horário", text="Horário")  
 tabela.heading("Procedimento", text="Procedimento")
 
-tabela.pack(pady=10)
-print("Tabela criada")
+scrollbar = ttk.Scrollbar(janela, orient="vertical", command=tabela.yview)
+tabela.configure(yscrollcommand=scrollbar.set)
+
+tabela.pack(side="left", fill="both", expand=True)
+scrollbar.pack(side="right", fill="y")
+
+
 
 def atualizar_tabela():
 
