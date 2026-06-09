@@ -1,7 +1,8 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from tkinter import messagebox
 import json
+from datetime import datetime
 
 cirurgias = []
 indice_edicao = None
@@ -75,13 +76,6 @@ tk.Label(janela, text="Procedimento:").pack()
 entrada_procedimento = tk.Entry(janela, width=40)
 entrada_procedimento.pack()
 
-# Campo de Busca
-
-tk.Label(janela, text="Buscar por Paciente:").pack()
-
-entrada_busca = tk.Entry(janela, width=40)
-entrada_busca.pack()
-
 
 
 def cadastrar():
@@ -92,6 +86,38 @@ def cadastrar():
     data = entrada_data.get()
     horario = entrada_horario.get()
     procedimento = entrada_procedimento.get()
+
+    # Campos obrigatórios
+
+    if (
+        not paciente or
+        not medico or
+        not hospital or
+        not convenio or
+        not data or
+        not horario or
+        not procedimento
+    ):
+        messagebox.showerror("Erro", "Todos os campos devem ser preenchidos!")
+        return
+    
+    # Validação de data no formato YYYY-MM-DD
+
+    try:
+        datetime.strptime(data, "%Y-%m-%d")
+    except ValueError:
+        messagebox.showerror("Erro", "Data inválida! Use o formato YYYY-MM-DD.")
+        return
+    
+    # Horário no formato HH:MM
+
+    try:
+        datetime.strptime(horario, "%H:%M")
+    except ValueError:
+        messagebox.showerror("Erro", "Horário inválido! Use o formato HH:MM.")
+        return
+    
+
 
     print("Cadastro Realizado:")
     print(f"Paciente: {paciente}")
@@ -133,8 +159,10 @@ def cadastrar():
     entrada_horario.delete(0, tk.END)
     entrada_procedimento.delete(0, tk.END)
 
-    from tkinter import messagebox
-    messagebox.showinfo("Sucesso", "Cirurgia cadastrada com sucesso!")
+    messagebox.showinfo(
+    "Sucesso",
+    "Cirurgia cadastrada com sucesso!"
+)
 
     print(cirurgias)
 
@@ -163,7 +191,13 @@ def excluir_cirurgia():
         print("Nenhuma cirurgia selecionada para exclusão.")
         return
     
+    resposta = messagebox.askyesno("Confirmar Exclusão", "Tem certeza que deseja excluir a cirurgia do paciente?")
+
+    if not resposta:
+        return
+    
     valores = tabela.item(item_selecionado [0], "values")
+    
     
     for cirurgia in cirurgias:
         if (cirurgia["paciente"] == valores[0]):
@@ -172,6 +206,7 @@ def excluir_cirurgia():
     
     salvar_dados()
     atualizar_tabela()
+
 
     messagebox.showinfo("Sucesso", "Cirurgia excluída com sucesso!")
 
@@ -245,7 +280,7 @@ def buscar_em_tempo_real(event=None):
 
     # Widgets
 
-tk.Label(janela, text="Buscar Paciente").pack()
+tk.Label(janela, text="Buscar por Paciente:").pack()
 
 entrada_busca = tk.Entry(janela, width=40)
 entrada_busca.pack()
