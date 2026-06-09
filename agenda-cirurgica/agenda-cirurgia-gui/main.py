@@ -141,16 +141,30 @@ def cadastrar():
     
     
     global indice_edicao
-    print("Índice de Edição: ", indice_edicao)
-    
+
     if indice_edicao is not None:
-        cirurgias[indice_edicao] = cirurgia
-        indice_edicao = None
+
+         cirurgias[indice_edicao] = cirurgia
+
+         atualizar_cirurgia_banco(
+               cirurgia,
+        paciente_original
+    )
+      
+
+         indice_edicao = None
+
     else:
         cirurgias.append(cirurgia)
+        salvar_cirurgia_no_banco(cirurgia)
+
+
+
+    
+    
+    
 
     salvar_dados()
-    salvar_cirurgia_no_banco(cirurgia)
     listar_cirurgias_banco()
     atualizar_tabela()
 
@@ -228,6 +242,9 @@ def editar_cirurgia():
         return
     
     valores = tabela.item(item_selecionado[0], "values")
+
+    global paciente_original
+    paciente_original = valores[0]
 
 
     global indice_edicao
@@ -410,6 +427,34 @@ def salvar_cirurgia_no_banco(cirurgia):
     conexao.commit()
     conexao.close()
 
+def atualizar_cirurgia_banco(cirurgia, paciente_original):
+
+    conexao = sqlite3.connect("cirurgias.db")
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        UPDATE cirurgias
+        SET paciente = ?,
+            medico = ?,
+            hospital = ?,
+            convenio = ?,
+            data = ?,
+            horario = ?,
+            procedimento = ?
+        WHERE paciente = ?
+    """, (
+        cirurgia["paciente"],
+        cirurgia["medico"],
+        cirurgia["hospital"],
+        cirurgia["convenio"],
+        cirurgia["data"],
+        cirurgia["horario"],
+        cirurgia["procedimento"],
+        paciente_original
+    ))
+
+    conexao.commit()
+    conexao.close()
 
 def listar_cirurgias_banco():
     conexao = sqlite3.connect("cirurgias.db")
