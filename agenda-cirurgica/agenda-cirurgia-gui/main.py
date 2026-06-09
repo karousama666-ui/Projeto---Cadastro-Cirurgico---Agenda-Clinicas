@@ -217,10 +217,11 @@ def excluir_cirurgia():
     
     valores = tabela.item(item_selecionado [0], "values")
 
-    paciente = valores[0]
-    excluir_cirurgia_banco(paciente)
+    id_cirurgia = valores[0]
+    print("Valores:", valores)
+    print("ID capturado:", id_cirurgia)
 
-
+    excluir_cirurgia_banco(id_cirurgia)
     
     
     for cirurgia in cirurgias:
@@ -335,7 +336,8 @@ botao_buscar.pack(pady=5)
 botao_mostrar_todos = tk.Button(janela, text="Mostrar Todos", command=mostrar_todos)
 botao_mostrar_todos.pack(pady=5)
 
-tabela = ttk.Treeview(janela, columns=("Paciente", "Médico", "Hospital", "Convênio", "Data", "Horário", "Procedimento"), show="headings")
+tabela = ttk.Treeview(janela, columns=("ID", "Paciente", "Médico", "Hospital", "Convênio", "Data", "Horário", "Procedimento"), show="headings")
+tabela.heading("ID", text="ID")
 tabela.heading("Paciente", text="Paciente")
 tabela.heading("Médico", text="Médico")
 tabela.heading("Hospital", text="Hospital")
@@ -355,7 +357,7 @@ def carregar_cirurgias_do_banco():
     cursor = conexao.cursor()
 
     cursor.execute(
-        "SELECT paciente, medico, hospital, convenio, data, horario, procedimento FROM cirurgias"""
+        "SELECT id, paciente, medico, hospital, convenio, data, horario, procedimento FROM cirurgias"""
     )
     registros = cursor.fetchall()
     conexao.close()
@@ -371,13 +373,15 @@ def atualizar_tabela():
 
     for registro in registros:
         tabela.insert("", "end", values=(
-            registro[0],
-            registro[1],
-            registro[2],
-            registro[3],
-            registro[4],
-            registro[5],
-            registro[6]
+            registro[0],  # ID
+            registro[1],  # paciente
+            registro[2],  # medico
+            registro[3],  # hospital
+            registro[4],  # convenio
+            registro[5],  # data
+            registro[6],  # horario 
+            registro[7]   # procedimento
+        
         ))
 
 
@@ -427,6 +431,21 @@ def salvar_cirurgia_no_banco(cirurgia):
     conexao.commit()
     conexao.close()
 
+def excluir_cirurgia_banco(id_cirurgia):
+
+    conexao = sqlite3.connect("cirurgias.db")
+
+    cursor = conexao.cursor()
+
+    cursor.execute(
+        "DELETE FROM cirurgias WHERE id = ?",
+        (id_cirurgia,)
+    )
+
+    conexao.commit()
+
+    conexao.close()
+
 def atualizar_cirurgia_banco(cirurgia, paciente_original):
 
     conexao = sqlite3.connect("cirurgias.db")
@@ -468,21 +487,6 @@ def listar_cirurgias_banco():
 
     for registro in registros:
         print(registro)
-
-    conexao.close()
-
-def excluir_cirurgia_banco(paciente):
-
-    conexao = sqlite3.connect("cirurgias.db")
-
-    cursor = conexao.cursor()
-
-    cursor.execute(
-        "DELETE FROM cirurgias WHERE paciente = ?",
-        (paciente,)
-    )
-
-    conexao.commit()
 
     conexao.close()
 
