@@ -1,3 +1,4 @@
+import sqlite3
 import tkinter as tk
 from tkinter import ttk, messagebox
 from tkinter import messagebox
@@ -104,9 +105,9 @@ def cadastrar():
     # Validação de data no formato YYYY-MM-DD
 
     try:
-        datetime.strptime(data, "%Y-%m-%d")
+        datetime.strptime(data, "%d/%m/%Y")
     except ValueError:
-        messagebox.showerror("Erro", "Data inválida! Use o formato YYYY-MM-DD.")
+        messagebox.showerror("Erro", "Data inválida! Use o formato DD/MM/YYYY.")
         return
     
     # Horário no formato HH:MM
@@ -149,7 +150,11 @@ def cadastrar():
         cirurgias.append(cirurgia)
 
     salvar_dados()
+    salvar_cirurgia_no_banco(cirurgia)
+    listar_cirurgias_banco()
     atualizar_tabela()
+
+    
 
     entrada_paciente.delete(0, tk.END)
     entrada_medico.delete(0, tk.END)
@@ -323,24 +328,117 @@ tabela.configure(yscrollcommand=scrollbar.set)
 tabela.pack(side="left", fill="both", expand=True)
 scrollbar.pack(side="right", fill="y")
 
+def carregar_cirurgias_do_banco():
+    conexao = sqlite3.connect("cirurgias.db")
+    cursor = conexao.cursor()
 
+    cursor.execute(
+        "SELECT paciente, medico, hospital, convenio, data, horario, procedimento FROM cirurgias"""
+    )
+    registros = cursor.fetchall()
+    conexao.close()
+
+    return registros
 
 def atualizar_tabela():
 
     for item in tabela.get_children():
         tabela.delete(item)
 
-    for cirurgia in cirurgias:
+    registros = carregar_cirurgias_do_banco()
+
+    for registro in registros:
         tabela.insert("", "end", values=(
-            cirurgia["paciente"],
-            cirurgia["medico"],
-            cirurgia["hospital"],
-            cirurgia["convenio"],
-            cirurgia["data"],
-            cirurgia["horario"],
-            cirurgia["procedimento"]
+            registro[0],
+            registro[1],
+            registro[2],
+            registro[3],
+            registro[4],
+            registro[5],
+            registro[6]
         ))
+
 atualizar_tabela()
+
+def criar_banco():
+    conexao = sqlite3.connect("cirurgias.db")
+    cursor = conexao.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS cirurgias (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            paciente TEXT,
+            medico TEXT,
+            hospital TEXT,
+            convenio TEXT,
+            data TEXT,
+            horario TEXT,
+            procedimento TEXT
+        )
+    """)
+    conexao.commit()
+    conexao.close()
+
+criar_banco()
+
+def salvar_cirurgia_no_banco(cirurgia):
+    conexao = sqlite3.connect("cirurgias.db")
+    cursor = conexao.cursor()
+    cursor.execute("""
+        INSERT INTO cirurgias (paciente, medico, hospital, convenio, data, horario, procedimento)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (
+        cirurgia["paciente"],
+        cirurgia["medico"],
+        cirurgia["hospital"],
+        cirurgia["convenio"],
+        cirurgia["data"],
+        cirurgia["horario"],
+        cirurgia["procedimento"]
+    ))
+    conexao.commit()
+    conexao.close()
+
+
+def listar_cirurgias_banco():
+    conexao = sqlite3.connect("cirurgias.db")
+    cursor = conexao.cursor()
+
+    cursor.execute("SELECT * FROM cirurgias")
+
+    registros = cursor.fetchall()
+
+    print("\nRegistros no Banco de Dados:")
+
+    for registro in registros:
+        print(registro)
+
+    conexao.close()
+
+def carregar_cirurgias_do_banco():
+    conexao = sqlite3.connect("cirurgias.db")
+    cursor = conexao.cursor()
+
+    cursor.execute(
+        "SELECT paciente, medico, hospital, convenio, data, horario, procedimento FROM cirurgias"""
+    )
+    registros = cursor.fetchall()
+    conexao.close()
+
+    return registros
+
+def carregar_cirurgias_do_banco():
+    conexao = sqlite3.connect("cirurgias.db")
+    cursor = conexao.cursor()
+
+    cursor.execute(
+        "SELECT paciente, medico, hospital, convenio, data, horario, procedimento FROM cirurgias"""
+    )
+    registros = cursor.fetchall()
+    conexao.close()
+
+    return registros
+
+
 
 
 
