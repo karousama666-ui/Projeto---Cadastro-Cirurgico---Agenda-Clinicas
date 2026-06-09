@@ -202,6 +202,11 @@ def excluir_cirurgia():
         return
     
     valores = tabela.item(item_selecionado [0], "values")
+
+    paciente = valores[0]
+    excluir_cirurgia_banco(paciente)
+
+
     
     
     for cirurgia in cirurgias:
@@ -358,9 +363,15 @@ def atualizar_tabela():
             registro[6]
         ))
 
-atualizar_tabela()
 
 def criar_banco():
+
+    import os
+    print("Banco sendo criado em:")
+    print(os.path.abspath("cirurgias.db"))
+
+
+
     conexao = sqlite3.connect("cirurgias.db")
     cursor = conexao.cursor()
     cursor.execute("""
@@ -379,6 +390,7 @@ def criar_banco():
     conexao.close()
 
 criar_banco()
+atualizar_tabela()
 
 def salvar_cirurgia_no_banco(cirurgia):
     conexao = sqlite3.connect("cirurgias.db")
@@ -414,33 +426,25 @@ def listar_cirurgias_banco():
 
     conexao.close()
 
-def carregar_cirurgias_do_banco():
+def excluir_cirurgia_banco(paciente):
+
     conexao = sqlite3.connect("cirurgias.db")
+
     cursor = conexao.cursor()
 
     cursor.execute(
-        "SELECT paciente, medico, hospital, convenio, data, horario, procedimento FROM cirurgias"""
+        "DELETE FROM cirurgias WHERE paciente = ?",
+        (paciente,)
     )
-    registros = cursor.fetchall()
+
+    conexao.commit()
+
     conexao.close()
 
-    return registros
-
-def carregar_cirurgias_do_banco():
-    conexao = sqlite3.connect("cirurgias.db")
-    cursor = conexao.cursor()
-
-    cursor.execute(
-        "SELECT paciente, medico, hospital, convenio, data, horario, procedimento FROM cirurgias"""
-    )
-    registros = cursor.fetchall()
-    conexao.close()
-
-    return registros
 
 
-
-
+criar_banco()
+atualizar_tabela()
 
 janela.mainloop()
 
