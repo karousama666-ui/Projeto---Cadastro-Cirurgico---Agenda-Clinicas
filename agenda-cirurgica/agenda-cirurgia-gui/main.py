@@ -221,38 +221,25 @@ def cadastrar():
         "horario": horario,
         "procedimento": procedimento
     }
-    
-    
+
     global indice_edicao
 
     if indice_edicao is not None:
 
-         cirurgias[indice_edicao] = cirurgia
+        atualizar_cirurgia_banco(
+            cirurgia,
+            id_cirurgia
+        )
 
-         atualizar_cirurgia_banco(
-               cirurgia,
-        paciente_original
-    )
-      
-
-         indice_edicao = None
+        indice_edicao = None
 
     else:
-        cirurgias.append(cirurgia)
+
         salvar_cirurgia_no_banco(cirurgia)
 
-
-
-    
-    
-    
-
-    salvar_dados()
     listar_cirurgias_banco()
     atualizar_tabela()
     atualizar_relatorios()
-
-    
 
     entrada_paciente.delete(0, tk.END)
     entrada_medico.delete(0, tk.END)
@@ -263,9 +250,9 @@ def cadastrar():
     entrada_procedimento.delete(0, tk.END)
 
     messagebox.showinfo(
-    "Sucesso",
-    "Cirurgia cadastrada com sucesso!"
-)
+        "Sucesso",
+        "Cirurgia cadastrada com sucesso!"
+    )
 
     print(cirurgias)
 
@@ -284,7 +271,7 @@ def carregar_dados():
         cirurgias = []
 
 cirurgias = []
-carregar_dados()
+# carregar_dados()
 
 def excluir_cirurgia():
     
@@ -313,7 +300,7 @@ def excluir_cirurgia():
             cirurgias.remove(cirurgia)
             break
     
-    salvar_dados()
+    # salvar_dados()
     atualizar_tabela()
     atualizar_relatorios()
 
@@ -329,8 +316,9 @@ def editar_cirurgia():
     
     valores = tabela.item(item_selecionado[0], "values")
 
-    global paciente_original
-    paciente_original = valores[0]
+    global id_cirurgia
+    id_cirurgia = valores[0]
+
 
 
     global indice_edicao
@@ -338,19 +326,19 @@ def editar_cirurgia():
     print("Editando índice: ", indice_edicao)
 
     entrada_paciente.delete(0, tk.END)
-    entrada_paciente.insert(0, valores[0])  
+    entrada_paciente.insert(0, valores[1])  
     entrada_medico.delete(0, tk.END)
-    entrada_medico.insert(0, valores[1])
+    entrada_medico.insert(0, valores[2])
     entrada_hospital.delete(0, tk.END)
-    entrada_hospital.insert(0, valores[2])
+    entrada_hospital.insert(0, valores[3])
     entrada_convenio.delete(0, tk.END)
-    entrada_convenio.insert(0, valores[3])
+    entrada_convenio.insert(0, valores[4])
     entrada_data.delete(0, tk.END)
-    entrada_data.insert(0, valores[4])
+    entrada_data.insert(0, valores[5])
     entrada_horario.delete(0, tk.END)
-    entrada_horario.insert(0, valores[5])
+    entrada_horario.insert(0, valores[6])
     entrada_procedimento.delete(0, tk.END)
-    entrada_procedimento.insert(0, valores[6])
+    entrada_procedimento.insert(0, valores[7])
 
 def buscar_paciente():
     nome_busca = entrada_busca.get().lower()
@@ -606,7 +594,7 @@ def atualizar_cirurgia_banco(cirurgia, paciente_original):
             data = ?,
             horario = ?,
             procedimento = ?
-        WHERE paciente = ?
+        WHERE id = ?
     """, (
         cirurgia["paciente"],
         cirurgia["medico"],
