@@ -4,6 +4,7 @@ from tkinter import ttk, messagebox
 from tkinter import messagebox
 import json
 from datetime import datetime
+from tkcalendar import DateEntry
 
 cirurgias = []
 indice_edicao = None
@@ -23,61 +24,142 @@ janela = tk.Tk()
 janela.title("Agenda Cirúrgica")
 janela.geometry("1920x1080")
 
+notebook = ttk.Notebook(janela)
+
+aba_cadastro = tk.Frame(notebook)
+aba_agenda = tk.Frame(notebook)
+aba_relatorios = tk.Frame(notebook)
+
+notebook.add(
+    aba_cadastro,
+    text="Cadastro"
+)
+
+notebook.add(
+    aba_agenda,
+    text="Agenda"
+)
+
+notebook.add(
+    aba_relatorios,
+    text="Relatórios"
+)
+
+notebook.pack(
+    expand=True,
+    fill="both"
+)
+
+titulo_relatorios = tk.Label(
+    aba_relatorios,
+    text="Relatórios",
+    font=("Arial", 16)
+)
+
+titulo_relatorios.pack(pady=10)
+
+label_total = tk.Label(
+    aba_relatorios,
+    text="Total de Cirurgias: 0",
+    font=("Arial", 12)
+)
+
+label_total.pack(pady=10)
+
+label_hospital = tk.Label(
+    aba_relatorios,
+    text="Hospital mais utilizado: -",
+    font=("Arial", 12)
+)
+
+label_hospital.pack(pady=5)
+
+label_convenio = tk.Label(
+    aba_relatorios,
+    text="Convênio mais utilizado: -",
+    font=("Arial", 12)
+)
+
+label_convenio.pack(pady=5)
+
+label_medico = tk.Label(
+    aba_relatorios,
+    text="Médico com mais cirurgias: -",
+    font=("Arial", 12)
+)
+
+label_medico.pack(pady=5)
+
+
+
 # Título
 
-titulo = tk.Label(janela, text="Cadastro Cirúrgico", font=("Arial", 16))
+titulo = tk.Label(aba_cadastro, text="Cadastro Cirúrgico", font=("Arial", 16))
 titulo.pack(pady=10)    
 
 # Campo Paciente
 
-tk.Label(janela, text="Paciente:").pack()
+tk.Label(aba_cadastro, text="Paciente:").pack()
 
-entrada_paciente = tk.Entry(janela, width=40)
+entrada_paciente = tk.Entry(aba_cadastro, width=40)
 entrada_paciente.pack()
 
 # Campo Médico
 
-tk.Label(janela, text="Médico:").pack()
+tk.Label(aba_cadastro, text="Médico:").pack()
 
-entrada_medico = tk.Entry(janela, width=40)
+entrada_medico = tk.Entry(aba_cadastro, width=40)
 entrada_medico.pack()
 
 # Campo Hospital
 
-tk.Label(janela, text="Hospital:").pack()
+tk.Label(aba_cadastro, text="Hospital:").pack()
 
-entrada_hospital = tk.Entry(janela, width=40)
+entrada_hospital = tk.Entry(aba_cadastro, width=40)
 entrada_hospital.pack()
 
 # Campo Convênio
 
-tk.Label(janela, text="Convênio:").pack()
+tk.Label(aba_cadastro, text="Convênio:").pack()
 
-entrada_convenio = tk.Entry(janela, width=40)
+entrada_convenio = tk.Entry(aba_cadastro, width=40)
 entrada_convenio.pack()
 
 # Campo Data da Cirurgia
 
-tk.Label(janela, text="Data da Cirurgia:").pack()
+tk.Label(aba_cadastro, text="Data da Cirurgia:").pack()
 
-entrada_data = tk.Entry(janela, width=40)
+entrada_data = DateEntry(
+    aba_cadastro,
+    width=20,
+    date_pattern="dd/mm/yyyy"
+)
+
 entrada_data.pack()
 
 # Campo Horário da Cirurgia
 
-tk.Label(janela, text="Horário da Cirurgia:").pack()
+tk.Label(aba_cadastro, text="Horário da Cirurgia:").pack()
 
-entrada_horario = tk.Entry(janela, width=40)
+entrada_horario = tk.Entry(aba_cadastro, width=40)
 entrada_horario.pack()
 
 # Campo Procedimento
 
-tk.Label(janela, text="Procedimento:").pack()
+tk.Label(aba_cadastro, text="Procedimento:").pack()
 
-entrada_procedimento = tk.Entry(janela, width=40)
+entrada_procedimento = tk.Entry(aba_cadastro, width=40)
 entrada_procedimento.pack()
 
+# Agenda
 
+titulo_agenda = tk.Label(
+    aba_agenda,
+    text="Agenda de Cirurgias",
+    font=("Arial", 16)
+)
+
+titulo_agenda.pack(pady=10)
 
 def cadastrar():
     paciente = entrada_paciente.get()
@@ -167,6 +249,7 @@ def cadastrar():
     salvar_dados()
     listar_cirurgias_banco()
     atualizar_tabela()
+    atualizar_relatorios()
 
     
 
@@ -231,6 +314,7 @@ def excluir_cirurgia():
     
     salvar_dados()
     atualizar_tabela()
+    atualizar_relatorios()
 
 
     messagebox.showinfo("Sucesso", "Cirurgia excluída com sucesso!")
@@ -306,11 +390,72 @@ def buscar_em_tempo_real(event=None):
                     cirurgia["procedimento"]
                 ))
 
+def atualizar_relatorios():
+
+    conexao = sqlite3.connect("cirurgias.db")
+    cursor = conexao.cursor()
+
+    # Total de cirurgias
+    cursor.execute("SELECT COUNT(*) FROM cirurgias")
+    total = cursor.fetchone()[0]
+
+    # Hospital mais utilizado
+    cursor.execute("""
+        SELECT hospital, COUNT(*)
+        FROM cirurgias
+        GROUP BY hospital
+        ORDER BY COUNT(*) DESC
+        LIMIT 1
+    """)
+    hospital = cursor.fetchone()
+
+    # Convênio mais utilizado
+    cursor.execute("""
+        SELECT convenio, COUNT(*)
+        FROM cirurgias
+        GROUP BY convenio
+        ORDER BY COUNT(*) DESC
+        LIMIT 1
+    """)
+    convenio = cursor.fetchone()
+
+    # Médico com mais cirurgias
+    cursor.execute("""
+        SELECT medico, COUNT(*)
+        FROM cirurgias
+        GROUP BY medico
+        ORDER BY COUNT(*) DESC
+        LIMIT 1
+    """)
+    medico = cursor.fetchone()
+
+    # Atualiza os labels
+    label_total.config(
+        text=f"Total de Cirurgias: {total}"
+    )
+
+    if hospital:
+        label_hospital.config(
+            text=f"Hospital mais utilizado: {hospital[0]}"
+        )
+
+    if convenio:
+        label_convenio.config(
+            text=f"Convênio mais utilizado: {convenio[0]}"
+        )
+
+    if medico:
+        label_medico.config(
+            text=f"Médico com mais cirurgias: {medico[0]}"
+        )
+
+    conexao.close()
+
     # Widgets
 
 tk.Label(janela, text="Buscar por Paciente:").pack()
 
-entrada_busca = tk.Entry(janela, width=40)
+entrada_busca = tk.Entry(aba_agenda, width=40)
 entrada_busca.pack()
 
 entrada_busca.bind(
@@ -319,24 +464,24 @@ entrada_busca.bind(
 )
     
 
-botao_cadastrar = tk.Button(janela, text="Cadastrar", command=cadastrar)
+botao_cadastrar = tk.Button(aba_cadastro, text="Cadastrar", command=cadastrar)
 botao_cadastrar.pack(pady=10)   
 
-botao_excluir = tk.Button(janela, text="Excluir Cirurgia",
+botao_excluir = tk.Button(aba_agenda, text="Excluir Cirurgia",
                           command=excluir_cirurgia)
 botao_excluir.pack(pady=5)
 
-botao_editar = tk.Button(janela, text="Editar Cirurgia",
+botao_editar = tk.Button(aba_agenda, text="Editar Cirurgia",
                          command=editar_cirurgia)
 botao_editar.pack(pady=5)
 
-botao_buscar = tk.Button(janela, text="Buscar", command=buscar_paciente)
+botao_buscar = tk.Button(aba_agenda, text="Buscar", command=buscar_paciente)
 botao_buscar.pack(pady=5)
 
-botao_mostrar_todos = tk.Button(janela, text="Mostrar Todos", command=mostrar_todos)
+botao_mostrar_todos = tk.Button(aba_agenda, text="Mostrar Todos", command=mostrar_todos)
 botao_mostrar_todos.pack(pady=5)
 
-tabela = ttk.Treeview(janela, columns=("ID", "Paciente", "Médico", "Hospital", "Convênio", "Data", "Horário", "Procedimento"), show="headings")
+tabela = ttk.Treeview(aba_agenda, columns=("ID", "Paciente", "Médico", "Hospital", "Convênio", "Data", "Horário", "Procedimento"), show="headings")
 tabela.heading("ID", text="ID")
 tabela.heading("Paciente", text="Paciente")
 tabela.heading("Médico", text="Médico")
@@ -346,7 +491,7 @@ tabela.heading("Data", text="Data")
 tabela.heading("Horário", text="Horário")  
 tabela.heading("Procedimento", text="Procedimento")
 
-scrollbar = ttk.Scrollbar(janela, orient="vertical", command=tabela.yview)
+scrollbar = ttk.Scrollbar(aba_agenda, orient="vertical", command=tabela.yview)
 tabela.configure(yscrollcommand=scrollbar.set)
 
 tabela.pack(side="left", fill="both", expand=True)
@@ -494,6 +639,7 @@ def listar_cirurgias_banco():
 
 criar_banco()
 atualizar_tabela()
+atualizar_relatorios()
 
 janela.mainloop()
 
