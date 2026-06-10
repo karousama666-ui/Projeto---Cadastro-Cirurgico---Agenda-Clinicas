@@ -5,6 +5,7 @@ from tkinter import messagebox
 import json
 from datetime import datetime
 from tkcalendar import DateEntry
+import matplotlib.pyplot as plt
 
 cirurgias = []
 indice_edicao = None
