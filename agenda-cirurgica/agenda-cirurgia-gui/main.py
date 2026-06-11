@@ -6,6 +6,10 @@ import json
 from datetime import datetime
 from tkcalendar import DateEntry
 import matplotlib.pyplot as plt
+from openpyxl import Workbook
+
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 cirurgias = []
 indice_edicao = None
@@ -90,6 +94,15 @@ label_medico = tk.Label(
 )
 
 label_medico.pack(pady=5)
+
+# COLOCA AQUI
+frame_grafico = tk.Frame(aba_relatorios)
+
+frame_grafico.pack(
+    fill="both",
+    expand=True,
+    pady=10
+)
 
 
 
@@ -440,6 +453,95 @@ def atualizar_relatorios():
 
     conexao.close()
 
+def exportar_excel():
+
+    wb = Workbook()
+    ws = wb.active
+
+    ws.title = "Cirurgias"
+
+    ws.append([
+        "ID",
+        "Paciente",
+        "Médico",
+        "Hospital",
+        "Convênio",
+        "Data",
+        "Horário",
+        "Procedimento"
+    ])
+
+    conexao = sqlite3.connect("cirurgias.db")
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        SELECT id, paciente, medico, hospital,
+               convenio, data, horario, procedimento
+        FROM cirurgias
+    """)
+
+    registros = cursor.fetchall()
+
+    for registro in registros:
+        ws.append(registro)
+
+    conexao.close()
+
+    wb.save("relatorio_cirurgias.xlsx")
+
+    messagebox.showinfo(
+        "Sucesso",
+        "Relatório Excel gerado com sucesso!"
+    )
+
+def gerar_grafico_hospitais():
+
+    conexao = sqlite3.connect("cirurgias.db")
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        SELECT hospital, COUNT(*)
+        FROM cirurgias
+        GROUP BY hospital
+        ORDER BY COUNT(*) DESC
+    """)
+
+    dados = cursor.fetchall()
+
+    conexao.close()
+
+    hospitais = []
+    quantidades = []
+
+    for hospital, quantidade in dados:
+        hospitais.append(hospital)
+        quantidades.append(quantidade)
+
+    figura = Figure(figsize=(6, 4), dpi=100)
+
+    grafico = figura.add_subplot(111)
+
+    grafico.bar(hospitais, quantidades)
+
+    grafico.set_title("Cirurgias por Hospital")
+    grafico.set_xlabel("Hospital")
+    grafico.set_ylabel("Quantidade")
+
+    for widget in frame_grafico.winfo_children():
+        widget.destroy()
+
+    canvas = FigureCanvasTkAgg(
+        figura,
+        master=frame_grafico
+    )
+
+    canvas.draw()
+
+    canvas.get_tk_widget().pack(
+        fill="both",
+        expand=True
+    )
+
     # Widgets
 
 tk.Label(janela, text="Buscar por Paciente:").pack()
@@ -469,6 +571,22 @@ botao_buscar.pack(pady=5)
 
 botao_mostrar_todos = tk.Button(aba_agenda, text="Mostrar Todos", command=mostrar_todos)
 botao_mostrar_todos.pack(pady=5)
+
+botao_excel = tk.Button(
+    janela,
+    text="Exportar Excel",
+    command=exportar_excel
+)
+
+botao_excel.pack(pady=5)
+
+botao_grafico = tk.Button(
+    aba_relatorios,
+    text="Gráfico por Hospital",
+    command=gerar_grafico_hospitais
+)
+
+botao_grafico.pack(pady=10)
 
 tabela = ttk.Treeview(aba_agenda, columns=("ID", "Paciente", "Médico", "Hospital", "Convênio", "Data", "Horário", "Procedimento"), show="headings")
 tabela.heading("ID", text="ID")
@@ -580,31 +698,31 @@ def excluir_cirurgia_banco(id_cirurgia):
 
     conexao.close()
 
-def atualizar_cirurgia_banco(cirurgia, paciente_original):
+def atualizar_cirurgia_banco(cirurgia, id_cirurgia):
 
     conexao = sqlite3.connect("cirurgias.db")
     cursor = conexao.cursor()
 
     cursor.execute("""
-        UPDATE cirurgias
-        SET paciente = ?,
-            medico = ?,
-            hospital = ?,
-            convenio = ?,
-            data = ?,
-            horario = ?,
-            procedimento = ?
-        WHERE id = ?
-    """, (
-        cirurgia["paciente"],
-        cirurgia["medico"],
-        cirurgia["hospital"],
-        cirurgia["convenio"],
-        cirurgia["data"],
-        cirurgia["horario"],
-        cirurgia["procedimento"],
-        paciente_original
-    ))
+    UPDATE cirurgias
+    SET paciente = ?,
+        medico = ?,
+        hospital = ?,
+        convenio = ?,
+        data = ?,
+        horario = ?,
+        procedimento = ?
+    WHERE id = ?
+""", (
+    cirurgia["paciente"],
+    cirurgia["medico"],
+    cirurgia["hospital"],
+    cirurgia["convenio"],
+    cirurgia["data"],
+    cirurgia["horario"],
+    cirurgia["procedimento"],
+    id_cirurgia
+))
 
     conexao.commit()
     conexao.close()
