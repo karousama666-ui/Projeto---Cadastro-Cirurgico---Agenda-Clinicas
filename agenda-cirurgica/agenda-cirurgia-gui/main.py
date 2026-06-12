@@ -165,6 +165,26 @@ tk.Label(aba_cadastro, text="Procedimento:").pack()
 entrada_procedimento = tk.Entry(aba_cadastro, width=40)
 entrada_procedimento.pack()
 
+# NOVO CAMPO STATUS
+
+tk.Label(aba_cadastro, text="Status:").pack()
+
+combo_status = ttk.Combobox(
+    aba_cadastro,
+    values=[
+        "Agendada",
+        "Confirmada",
+        "Realizada",
+        "Cancelada"
+    ],
+    state="readonly",
+    width=37
+)
+
+combo_status.pack()
+
+combo_status.set("Agendada")
+
 # Agenda
 
 titulo_agenda = tk.Label(
@@ -183,6 +203,10 @@ def cadastrar():
     data = entrada_data.get()
     horario = entrada_horario.get()
     procedimento = entrada_procedimento.get()
+    status = combo_status.get()
+
+    print("Status:", status)
+
 
     # Campos obrigatórios
 
@@ -225,15 +249,18 @@ def cadastrar():
     print(f"Horário da Cirurgia: {horario}")
     print(f"Procedimento: {procedimento}")
 
+# Dicionário para armazenar os dados da cirurgia
+
     cirurgia = {
-        "paciente": paciente,
-        "medico": medico,
-        "hospital": hospital,
-        "convenio": convenio,
-        "data": data,
-        "horario": horario,
-        "procedimento": procedimento
-    }
+    "paciente": paciente,
+    "medico": medico,
+    "hospital": hospital,
+    "convenio": convenio,
+    "data": data,
+    "horario": horario,
+    "procedimento": procedimento,
+    "status": status
+}
 
     global indice_edicao
 
@@ -588,7 +615,21 @@ botao_grafico = tk.Button(
 
 botao_grafico.pack(pady=10)
 
-tabela = ttk.Treeview(aba_agenda, columns=("ID", "Paciente", "Médico", "Hospital", "Convênio", "Data", "Horário", "Procedimento"), show="headings")
+tabela = ttk.Treeview(
+    aba_agenda,
+    columns=(
+        "ID",
+        "Paciente",
+        "Médico",
+        "Hospital",
+        "Convênio",
+        "Data",
+        "Horário",
+        "Procedimento",
+        "Status"
+    ),
+    show="headings"
+)
 tabela.heading("ID", text="ID")
 tabela.heading("Paciente", text="Paciente")
 tabela.heading("Médico", text="Médico")
@@ -597,6 +638,7 @@ tabela.heading("Convênio", text="Convênio")
 tabela.heading("Data", text="Data")
 tabela.heading("Horário", text="Horário")  
 tabela.heading("Procedimento", text="Procedimento")
+tabela.heading("Status", text="Status")
 
 scrollbar = ttk.Scrollbar(aba_agenda, orient="vertical", command=tabela.yview)
 tabela.configure(yscrollcommand=scrollbar.set)
@@ -608,9 +650,19 @@ def carregar_cirurgias_do_banco():
     conexao = sqlite3.connect("cirurgias.db")
     cursor = conexao.cursor()
 
-    cursor.execute(
-        "SELECT id, paciente, medico, hospital, convenio, data, horario, procedimento FROM cirurgias"""
-    )
+    cursor.execute("""
+SELECT id,
+       paciente,
+       medico,
+       hospital,
+       convenio,
+       data,
+       horario,
+       procedimento,
+       status
+FROM cirurgias
+""")
+    
     registros = cursor.fetchall()
     conexao.close()
 
@@ -625,17 +677,16 @@ def atualizar_tabela():
 
     for registro in registros:
         tabela.insert("", "end", values=(
-            registro[0],  # ID
-            registro[1],  # paciente
-            registro[2],  # medico
-            registro[3],  # hospital
-            registro[4],  # convenio
-            registro[5],  # data
-            registro[6],  # horario 
-            registro[7]   # procedimento
-        
+            registro[0],
+            registro[1],
+            registro[2],
+            registro[3],
+            registro[4],
+            registro[5],
+            registro[6],
+            registro[7],
+            registro[8]
         ))
-
 
 def criar_banco():
 
@@ -669,17 +720,27 @@ def salvar_cirurgia_no_banco(cirurgia):
     conexao = sqlite3.connect("cirurgias.db")
     cursor = conexao.cursor()
     cursor.execute("""
-        INSERT INTO cirurgias (paciente, medico, hospital, convenio, data, horario, procedimento)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (
-        cirurgia["paciente"],
-        cirurgia["medico"],
-        cirurgia["hospital"],
-        cirurgia["convenio"],
-        cirurgia["data"],
-        cirurgia["horario"],
-        cirurgia["procedimento"]
-    ))
+    INSERT INTO cirurgias (
+        paciente,
+        medico,
+        hospital,
+        convenio,
+        data,
+        horario,
+        procedimento,
+        status
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+""", (
+    cirurgia["paciente"],
+    cirurgia["medico"],
+    cirurgia["hospital"],
+    cirurgia["convenio"],
+    cirurgia["data"],
+    cirurgia["horario"],
+    cirurgia["procedimento"],
+    cirurgia["status"]
+))
     conexao.commit()
     conexao.close()
 
@@ -742,8 +803,47 @@ def listar_cirurgias_banco():
 
     conexao.close()
 
+def adicionar_coluna_status():
 
+    conexao = sqlite3.connect("cirurgias.db")
+    cursor = conexao.cursor()
 
+    try:
+
+        cursor.execute("""
+            ALTER TABLE cirurgias
+            ADD COLUMN status TEXT
+        """)
+
+        print("Coluna STATUS criada com sucesso!")
+
+    except sqlite3.OperationalError:
+
+        print("Coluna STATUS já existe.")
+
+    conexao.commit()
+    conexao.close()
+
+def verificar_colunas():
+
+    conexao = sqlite3.connect("cirurgias.db")
+    cursor = conexao.cursor()
+
+    cursor.execute("PRAGMA table_info(cirurgias)")
+
+    colunas = cursor.fetchall()
+
+    print("\nCOLUNAS DA TABELA:")
+
+    for coluna in colunas:
+        print(coluna)
+
+    conexao.close()
+
+adicionar_coluna_status()
+verificar_colunas()
+adicionar_coluna_status()
+verificar_colunas()
 criar_banco()
 atualizar_tabela()
 atualizar_relatorios()
