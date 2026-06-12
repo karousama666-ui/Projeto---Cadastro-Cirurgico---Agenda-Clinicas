@@ -772,6 +772,26 @@ tabela.heading("Horário", text="Horário")
 tabela.heading("Procedimento", text="Procedimento")
 tabela.heading("Status", text="Status")
 
+tabela.tag_configure(
+    "agendada",
+    background="#FFF3CD"
+)
+
+tabela.tag_configure(
+    "confirmada",
+    background="#D1ECF1"
+)
+
+tabela.tag_configure(
+    "realizada",
+    background="#D4EDDA"
+)
+
+tabela.tag_configure(
+    "cancelada",
+    background="#F8D7DA"
+)
+
 scrollbar = ttk.Scrollbar(aba_agenda, orient="vertical", command=tabela.yview)
 tabela.configure(yscrollcommand=scrollbar.set)
 
@@ -805,17 +825,39 @@ def atualizar_tabela():
         print(r)
 
     for registro in registros:
-        tabela.insert("", "end", values=(
-            registro[0],
-            registro[1],
-            registro[2],
-            registro[3],
-            registro[4],
-            registro[5],
-            registro[6],
-            registro[7],
-            registro[8]
-        ))
+
+        status = registro[8]
+
+        tag = ""
+
+        if status == "Agendada":
+           tag = "agendada"
+
+        elif status == "Confirmada":
+            tag = "confirmada"
+
+        elif status == "Realizada":
+            tag = "realizada"
+
+        elif status == "Cancelada":
+            tag = "cancelada"
+
+        tabela.insert(
+            "",
+           "end",
+           values=(
+               registro[0],
+               registro[1],
+               registro[2],
+               registro[3],
+               registro[4],
+               registro[5],
+               registro[6],
+               registro[7],
+               registro[8]
+        ),
+        tags=(tag,)
+    )
 
 def criar_banco():
 
