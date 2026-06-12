@@ -95,6 +95,34 @@ label_medico = tk.Label(
 
 label_medico.pack(pady=5)
 
+label_agendadas = tk.Label(
+    aba_relatorios,
+    text="Agendadas: 0"
+)
+
+label_agendadas.pack(pady=5)
+
+label_confirmadas = tk.Label(
+    aba_relatorios,
+    text="Confirmadas: 0"
+)
+
+label_confirmadas.pack(pady=5)
+
+label_realizadas = tk.Label(
+    aba_relatorios,
+    text="Realizadas: 0"
+)
+
+label_realizadas.pack(pady=5)
+
+label_canceladas = tk.Label(
+    aba_relatorios,
+    text="Canceladas: 0"
+)
+
+label_canceladas.pack(pady=5)
+
 # COLOCA AQUI
 frame_grafico = tk.Frame(aba_relatorios)
 
@@ -424,6 +452,34 @@ def atualizar_relatorios():
     conexao = sqlite3.connect("cirurgias.db")
     cursor = conexao.cursor()
 
+    cursor.execute("""
+    SELECT COUNT(*)
+    FROM cirurgias
+    WHERE status = 'Agendada'
+    """)
+    agendadas = cursor.fetchone()[0]
+
+    cursor.execute("""
+    SELECT COUNT(*)
+    FROM cirurgias
+    WHERE status = 'Confirmada'
+    """)
+    confirmadas = cursor.fetchone()[0]
+
+    cursor.execute("""
+    SELECT COUNT(*)
+    FROM cirurgias
+    WHERE status = 'Realizada'
+    """)
+    realizadas = cursor.fetchone()[0]
+
+    cursor.execute("""
+    SELECT COUNT(*)
+    FROM cirurgias
+    WHERE status = 'Cancelada'
+    """)
+    canceladas = cursor.fetchone()[0]
+
     # Total de cirurgias
     cursor.execute("SELECT COUNT(*) FROM cirurgias")
     total = cursor.fetchone()[0]
@@ -458,9 +514,24 @@ def atualizar_relatorios():
     """)
     medico = cursor.fetchone()
 
-    # Atualiza os labels
     label_total.config(
         text=f"Total de Cirurgias: {total}"
+    )
+
+    label_agendadas.config(
+        text=f"Agendadas: {agendadas}"
+    )
+
+    label_confirmadas.config(
+        text=f"Confirmadas: {confirmadas}"
+    )
+
+    label_realizadas.config(
+        text=f"Realizadas: {realizadas}"
+    )
+
+    label_canceladas.config(
+        text=f"Canceladas: {canceladas}"
     )
 
     if hospital:
@@ -647,23 +718,17 @@ tabela.pack(side="left", fill="both", expand=True)
 scrollbar.pack(side="right", fill="y")
 
 def carregar_cirurgias_do_banco():
+
     conexao = sqlite3.connect("cirurgias.db")
     cursor = conexao.cursor()
 
     cursor.execute("""
-SELECT id,
-       paciente,
-       medico,
-       hospital,
-       convenio,
-       data,
-       horario,
-       procedimento,
-       status
-FROM cirurgias
-""")
-    
+        SELECT *
+        FROM cirurgias
+    """)
+
     registros = cursor.fetchall()
+
     conexao.close()
 
     return registros
@@ -674,6 +739,10 @@ def atualizar_tabela():
         tabela.delete(item)
 
     registros = carregar_cirurgias_do_banco()
+
+    print("REGISTROS:")
+    for r in registros:
+        print(r)
 
     for registro in registros:
         tabela.insert("", "end", values=(
@@ -691,13 +760,13 @@ def atualizar_tabela():
 def criar_banco():
 
     import os
+
     print("Banco sendo criado em:")
     print(os.path.abspath("cirurgias.db"))
 
-
-
     conexao = sqlite3.connect("cirurgias.db")
     cursor = conexao.cursor()
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS cirurgias (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -710,6 +779,20 @@ def criar_banco():
             procedimento TEXT
         )
     """)
+
+    try:
+
+        cursor.execute("""
+            ALTER TABLE cirurgias
+            ADD COLUMN status TEXT
+        """)
+
+        print("Coluna STATUS criada!")
+
+    except sqlite3.OperationalError:
+
+        print("STATUS já existe.")
+
     conexao.commit()
     conexao.close()
 
