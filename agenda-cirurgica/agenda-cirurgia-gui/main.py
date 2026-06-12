@@ -8,8 +8,23 @@ from tkcalendar import DateEntry
 import matplotlib.pyplot as plt
 from openpyxl import Workbook
 
+
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+
+import os
+
+BASE_DIR = os.path.dirname(
+    os.path.abspath(__file__)
+)
+
+BANCO = os.path.join(
+    BASE_DIR,
+    "cirurgias.db"
+)
+
+print("BANCO DEFINITIVO:")
+print(BANCO)
 
 cirurgias = []
 indice_edicao = None
@@ -449,7 +464,7 @@ def buscar_em_tempo_real(event=None):
 
 def atualizar_relatorios():
 
-    conexao = sqlite3.connect("cirurgias.db")
+    conexao = sqlite3.connect(BANCO)
     cursor = conexao.cursor()
 
     cursor.execute("""
@@ -569,7 +584,7 @@ def exportar_excel():
         "Procedimento"
     ])
 
-    conexao = sqlite3.connect("cirurgias.db")
+    conexao = sqlite3.connect(BANCO)
     cursor = conexao.cursor()
 
     cursor.execute("""
@@ -594,7 +609,7 @@ def exportar_excel():
 
 def gerar_grafico_hospitais():
 
-    conexao = sqlite3.connect("cirurgias.db")
+    conexao = sqlite3.connect(BANCO)
     cursor = conexao.cursor()
 
     cursor.execute("""
@@ -693,6 +708,9 @@ def alterar_status():
     )
 ).pack(pady=10)
 
+def abrir_filtros():
+    print("Abrindo filtros")
+
     # Widgets
 
 tk.Label(janela, text="Buscar por Paciente:").pack()
@@ -719,6 +737,14 @@ botao_editar.pack(pady=5)
 
 botao_buscar = tk.Button(aba_agenda, text="Buscar", command=buscar_paciente)
 botao_buscar.pack(pady=5)
+
+botao_filtro = tk.Button(
+    aba_agenda,
+    text="Filtros",
+    command=abrir_filtros
+)
+
+botao_filtro.pack(pady=5)
 
 botao_mostrar_todos = tk.Button(aba_agenda, text="Mostrar Todos", command=mostrar_todos)
 botao_mostrar_todos.pack(pady=5)
@@ -800,7 +826,7 @@ scrollbar.pack(side="right", fill="y")
 
 def carregar_cirurgias_do_banco():
 
-    conexao = sqlite3.connect("cirurgias.db")
+    conexao = sqlite3.connect(BANCO)
     cursor = conexao.cursor()
 
     cursor.execute("""
@@ -820,6 +846,9 @@ def atualizar_tabela():
         tabela.delete(item)
 
     registros = carregar_cirurgias_do_banco()
+
+    print("TOTAL DE REGISTROS:", len(registros))
+    print(registros)
 
     for r in registros:
         print(r)
@@ -865,7 +894,7 @@ def criar_banco():
 
     print(os.path.abspath("cirurgias.db"))
 
-    conexao = sqlite3.connect("cirurgias.db")
+    conexao = sqlite3.connect(BANCO)
     cursor = conexao.cursor()
 
     cursor.execute("""
@@ -901,7 +930,7 @@ criar_banco()
 atualizar_tabela()
 
 def salvar_cirurgia_no_banco(cirurgia):
-    conexao = sqlite3.connect("cirurgias.db")
+    conexao = sqlite3.connect(BANCO)
     cursor = conexao.cursor()
     cursor.execute("""
     INSERT INTO cirurgias (
@@ -930,7 +959,7 @@ def salvar_cirurgia_no_banco(cirurgia):
 
 def excluir_cirurgia_banco(id_cirurgia):
 
-    conexao = sqlite3.connect("cirurgias.db")
+    conexao = sqlite3.connect(BANCO)
 
     cursor = conexao.cursor()
 
@@ -945,7 +974,7 @@ def excluir_cirurgia_banco(id_cirurgia):
 
 def atualizar_cirurgia_banco(cirurgia, id_cirurgia):
 
-    conexao = sqlite3.connect("cirurgias.db")
+    conexao = sqlite3.connect(BANCO)
     cursor = conexao.cursor()
 
     cursor.execute("""
@@ -973,7 +1002,7 @@ def atualizar_cirurgia_banco(cirurgia, id_cirurgia):
     conexao.close()
 
 def listar_cirurgias_banco():
-    conexao = sqlite3.connect("cirurgias.db")
+    conexao = sqlite3.connect(BANCO)
     cursor = conexao.cursor()
 
     cursor.execute("SELECT * FROM cirurgias")
@@ -989,7 +1018,7 @@ def listar_cirurgias_banco():
 
 def adicionar_coluna_status():
 
-    conexao = sqlite3.connect("cirurgias.db")
+    conexao = sqlite3.connect(BANCO)
     cursor = conexao.cursor()
 
     try:
@@ -1010,7 +1039,7 @@ def adicionar_coluna_status():
 
 def verificar_colunas():
 
-    conexao = sqlite3.connect("cirurgias.db")
+    conexao = sqlite3.connect(BANCO)
     cursor = conexao.cursor()
 
     cursor.execute("PRAGMA table_info(cirurgias)")
@@ -1026,7 +1055,7 @@ def verificar_colunas():
 
 def atualizar_status_banco(id_cirurgia, novo_status):
 
-    conexao = sqlite3.connect("cirurgias.db")
+    conexao = sqlite3.connect(BANCO)
     cursor = conexao.cursor()
 
     cursor.execute("""
@@ -1061,6 +1090,20 @@ def salvar_novo_status(
         "Sucesso",
         "Status atualizado com sucesso!"
     )
+
+conexao = sqlite3.connect(
+r"C:\Users\TERMINAL-01\Desktop\Visual Studio\Projeto---Cadastro-Cirurgico---Agenda-Clinicas\cirurgias.db"
+)
+cursor = conexao.cursor()
+
+cursor.execute("SELECT * FROM cirurgias")
+
+print("BANCO:", BANCO)
+
+for linha in cursor.fetchall():
+    print(linha)
+
+conexao.close()
 
 adicionar_coluna_status()
 verificar_colunas()
