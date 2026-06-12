@@ -640,6 +640,59 @@ def gerar_grafico_hospitais():
         expand=True
     )
 
+def alterar_status():
+
+    item_selecionado = tabela.selection()
+
+    if not item_selecionado:
+        messagebox.showwarning(
+            "Aviso",
+            "Selecione uma cirurgia."
+        )
+        return
+
+    valores = tabela.item(
+        item_selecionado[0],
+        "values"
+    )
+
+    id_cirurgia = valores[0]
+
+    janela_status = tk.Toplevel(janela)
+
+    janela_status.title("Alterar Status")
+    janela_status.geometry("300x200")
+
+    tk.Label(
+        janela_status,
+        text="Novo Status:"
+    ).pack(pady=10)
+
+    status_var = tk.StringVar()
+
+    combo_status = ttk.Combobox(
+        janela_status,
+        textvariable=status_var,
+        values=[
+            "Agendada",
+            "Confirmada",
+            "Realizada",
+            "Cancelada"
+        ]
+    )
+
+    combo_status.pack(pady=10)
+
+    tk.Button(
+        janela_status,
+        text="Salvar",
+        command=lambda: salvar_novo_status(
+            id_cirurgia,
+            status_var.get(),
+            janela_status
+    )
+).pack(pady=10)
+
     # Widgets
 
 tk.Label(janela, text="Buscar por Paciente:").pack()
@@ -669,6 +722,14 @@ botao_buscar.pack(pady=5)
 
 botao_mostrar_todos = tk.Button(aba_agenda, text="Mostrar Todos", command=mostrar_todos)
 botao_mostrar_todos.pack(pady=5)
+
+botao_status = tk.Button(
+    aba_agenda,
+    text="Alterar Status",
+    command=alterar_status
+)
+
+botao_status.pack(pady=5)
 
 botao_excel = tk.Button(
     janela,
@@ -740,7 +801,6 @@ def atualizar_tabela():
 
     registros = carregar_cirurgias_do_banco()
 
-    print("REGISTROS:")
     for r in registros:
         print(r)
 
@@ -761,7 +821,6 @@ def criar_banco():
 
     import os
 
-    print("Banco sendo criado em:")
     print(os.path.abspath("cirurgias.db"))
 
     conexao = sqlite3.connect("cirurgias.db")
@@ -922,6 +981,44 @@ def verificar_colunas():
         print(coluna)
 
     conexao.close()
+
+def atualizar_status_banco(id_cirurgia, novo_status):
+
+    conexao = sqlite3.connect("cirurgias.db")
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        UPDATE cirurgias
+        SET status = ?
+        WHERE id = ?
+    """, (
+        novo_status,
+        id_cirurgia
+    ))
+
+    conexao.commit()
+    conexao.close()
+
+def salvar_novo_status(
+    id_cirurgia,
+    novo_status,
+    janela_status
+):
+
+    atualizar_status_banco(
+        id_cirurgia,
+        novo_status
+    )
+
+    atualizar_tabela()
+    atualizar_relatorios()
+
+    janela_status.destroy()
+
+    messagebox.showinfo(
+        "Sucesso",
+        "Status atualizado com sucesso!"
+    )
 
 adicionar_coluna_status()
 verificar_colunas()
