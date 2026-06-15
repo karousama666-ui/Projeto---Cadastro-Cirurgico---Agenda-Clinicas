@@ -37,6 +37,65 @@ def salvar_dados():
             indent=4
         )
 
+
+def gerar_grafico_status():
+
+    conexao = sqlite3.connect(BANCO)
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        SELECT status, COUNT(*)
+        FROM cirurgias
+        GROUP BY status
+    """)
+
+    dados = cursor.fetchall()
+
+    conexao.close()
+
+    labels = []
+    valores = []
+
+    for status, quantidade in dados:
+
+        labels.append(status)
+
+        valores.append(quantidade)
+
+    figura = Figure(
+        figsize=(5,4),
+        dpi=100
+    )
+
+    grafico = figura.add_subplot(111)
+
+    grafico.pie(
+        valores,
+        labels=labels,
+        autopct="%1.1f%%"
+    )
+
+    grafico.set_title(
+        "Cirurgias por Status"
+    )
+
+    for widget in frame_grafico_status.winfo_children():
+        widget.destroy()
+
+    canvas = FigureCanvasTkAgg(
+        figura,
+        master=frame_grafico_status
+    )
+
+    canvas.draw()
+
+    canvas.get_tk_widget().pack(
+        fill="both",
+        expand=True
+    )
+
+
+
 janela = tk.Tk()
 janela.title("Agenda Cirúrgica")
 janela.geometry("1920x1080")
@@ -136,12 +195,15 @@ label_canceladas = tk.Label(
 label_canceladas.pack(pady=5)
 
 # COLOCA AQUI
-frame_grafico = tk.Frame(aba_relatorios)
 
-frame_grafico.pack(
+frame_grafico_status = tk.Frame(
+    aba_relatorios
+)
+
+frame_grafico_status.pack(
     fill="both",
     expand=True,
-    pady=10
+    pady=20
 )
 
 
@@ -562,6 +624,54 @@ def atualizar_relatorios():
         )
 
     conexao.close()
+
+gerar_grafico_status()
+
+
+from datetime import datetime, timedelta
+
+def verificar_cirurgias_proximas():
+
+    conexao = sqlite3.connect(BANCO)
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        SELECT paciente, data
+        FROM cirurgias
+    """)
+
+    registros = cursor.fetchall()
+
+    conexao.close()
+
+    hoje = datetime.now()
+
+    avisos = []
+
+    for paciente, data in registros:
+
+        try:
+
+            data_cirurgia = datetime.strptime(
+                data,
+                "%d/%m/%Y"
+            )
+
+            diferenca = (
+                data_cirurgia - hoje
+            ).days
+
+            if 0 <= diferenca <= 7:
+
+                avisos.append(
+                    f"{paciente} - {data}"
+                )
+
+        except:
+            pass
+
+    return avisos
+
 
 def exportar_excel():
 
@@ -1002,8 +1112,34 @@ def criar_banco():
         )
     """)
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS usuarios (
+
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            usuario TEXT UNIQUE,
+
+            senha TEXT
+
+        )
+   """)
+    
+    cursor.execute("""
+                   SELECT *
+                   FROM usuarios
+                   WHERE usuario = 'admin'
+                   """)
+    usuario = cursor.fetchone()
+    if not usuario:
+        cursor.execute("""
+            INSERT INTO usuarios (usuario, senha)
+            VALUES ('admin', '123')
+        """)
+
     conexao.commit()
     conexao.close()
+
+    
 
 criar_banco()
 atualizar_tabela()
@@ -1149,6 +1285,25 @@ def salvar_novo_status(
         "Status atualizado com sucesso!"
     )
 
+def validar_login(usuario, senha):
+
+    conexao = sqlite3.connect(BANCO)
+
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+    SELECT *
+    FROM usuarios
+    WHERE usuario = ?
+    AND senha = ?
+    """, (usuario, senha))
+
+    resultado = cursor.fetchone()
+
+    conexao.close()
+
+    return resultado
+
 
 adicionar_coluna_status()
 verificar_colunas()
@@ -1157,6 +1312,15 @@ verificar_colunas()
 criar_banco()
 atualizar_tabela()
 atualizar_relatorios()
+
+avisos = verificar_cirurgias_proximas()
+
+if avisos:
+
+    messagebox.showinfo(
+        "Cirurgias Próximas",
+        "\n".join(avisos)
+    )
 
 janela.mainloop()
 
