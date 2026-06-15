@@ -1058,6 +1058,224 @@ def aplicar_filtros(
         )
     
 
+def abrir_edicao(event):
+
+    item = tabela.selection()
+
+    if not item:
+        return
+
+    valores = tabela.item(
+        item[0],
+        "values"
+    )
+
+    janela_edicao = tk.Toplevel(janela)
+
+    janela_edicao.grab_set()
+    janela_edicao.focus_force()
+
+    janela_edicao.title("Editar Cirurgia")
+
+    janela_edicao.geometry("500x700")
+
+    tk.Label(
+        janela_edicao,
+        text="Paciente"
+    ).pack()
+
+    entry_paciente = tk.Entry(
+        janela_edicao,
+        width=40
+    )
+
+    entry_paciente.pack()
+
+    entry_paciente.focus_set()
+
+    entry_paciente.insert(
+        0,
+        valores[1]
+    )
+
+    tk.Label(
+        janela_edicao,
+        text="Médico"
+    ).pack()
+
+    entry_medico = tk.Entry(
+        janela_edicao,
+        width=40
+    )
+
+    entry_medico.pack()
+
+    entry_medico.insert(
+        0,
+        valores[2]
+    )
+
+    tk.Label(
+        janela_edicao,
+        text="Hospital"
+    ).pack()
+
+    entry_hospital = tk.Entry(
+        janela_edicao,
+        width=40
+    )
+
+    entry_hospital.pack()
+
+    entry_hospital.insert(
+        0,
+        valores[3]
+    )
+
+    tk.Label(
+        janela_edicao,
+        text="Convênio"
+    ).pack()
+
+    entry_convenio = tk.Entry(
+        janela_edicao,
+        width=40
+    )
+
+    entry_convenio.pack()
+
+    entry_convenio.insert(
+        0,
+        valores[4]
+    )
+
+    tk.Label(
+        janela_edicao,
+        text="Data"
+    ).pack()
+
+    entry_data = tk.Entry(
+        janela_edicao,
+        width=40
+    )
+
+    entry_data.pack()
+
+    entry_data.insert(
+        0,
+        valores[5]
+    )
+
+    tk.Label(
+        janela_edicao,
+        text="Horário"
+    ).pack()
+
+    entry_horario = tk.Entry(
+        janela_edicao,
+        width=40
+    )
+
+    entry_horario.pack()
+
+    entry_horario.insert(
+        0,
+        valores[6]
+    )
+
+    tk.Label(
+        janela_edicao,
+        text="Procedimento"
+    ).pack()
+
+    entry_procedimento = tk.Entry(
+        janela_edicao,
+        width=40
+    )
+
+    entry_procedimento.pack()
+
+    entry_procedimento.insert(
+        0,
+        valores[7]
+    )
+
+    tk.Label(
+        janela_edicao,
+        text="Status"
+    ).pack()
+
+    combo_status = ttk.Combobox(
+        janela_edicao,
+        values=[
+            "Agendada",
+            "Confirmada",
+            "Realizada",
+            "Cancelada"
+        ]
+    )
+
+    combo_status.pack()
+
+    combo_status.set(
+        valores[8]
+    )
+
+    id_cirurgia = valores[0]
+
+    def salvar_alteracoes():
+
+        conexao = sqlite3.connect(BANCO)
+
+        cursor = conexao.cursor()
+
+        cursor.execute("""
+        UPDATE cirurgias
+        SET
+            paciente = ?,
+            medico = ?,
+            hospital = ?,
+            convenio = ?,
+            data = ?,
+            horario = ?,
+            procedimento = ?,
+            status = ?
+        WHERE id = ?
+        """, (
+
+            entry_paciente.get(),
+            entry_medico.get(),
+            entry_hospital.get(),
+            entry_convenio.get(),
+            entry_data.get(),
+            entry_horario.get(),
+            entry_procedimento.get(),
+            combo_status.get(),
+            id_cirurgia
+
+        ))
+
+        conexao.commit()
+
+        conexao.close()
+
+        atualizar_tabela()
+
+        atualizar_relatorios()
+
+        janela_edicao.destroy()
+
+    tk.Button(
+        janela_edicao,
+        text="Salvar Alterações",
+        command=salvar_alteracoes
+    ).pack(pady=20)
+
+    tabela.bind(
+    "<Double-1>",
+    abrir_edicao
+)
+
 
 
 
@@ -1074,6 +1292,7 @@ botao_editar.pack(pady=5)
 
 botao_buscar = tk.Button(aba_agenda, text="Buscar", command=buscar_paciente)
 botao_buscar.pack(pady=5)
+
 
 
 botao_filtros = tk.Button(
