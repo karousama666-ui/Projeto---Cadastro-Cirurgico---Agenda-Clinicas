@@ -94,7 +94,66 @@ def gerar_grafico_status():
         expand=True
     )
 
+def abrir_login():
 
+    janela_login = tk.Tk()
+
+    janela_login.title("Login")
+
+    janela_login.geometry("300x200")
+
+    tk.Label(
+        janela_login,
+        text="Usuário"
+    ).pack(pady=5)
+
+    entry_usuario = tk.Entry(
+        janela_login
+    )
+
+    entry_usuario.pack()
+
+    tk.Label(
+        janela_login,
+        text="Senha"
+    ).pack(pady=5)
+
+    entry_senha = tk.Entry(
+        janela_login,
+        show="*"
+    )
+
+    entry_senha.pack()
+
+    def entrar():
+
+        usuario = entry_usuario.get()
+
+        senha = entry_senha.get()
+
+        if validar_login(
+            usuario,
+            senha
+        ):
+
+            janela_login.destroy()
+
+            abrir_sistema()
+
+        else:
+
+            messagebox.showerror(
+                "Erro",
+                "Usuário ou senha inválidos"
+            )
+
+    tk.Button(
+        janela_login,
+        text="Entrar",
+        command=entrar
+    ).pack(pady=15)
+
+    janela_login.mainloop()
 
 janela = tk.Tk()
 janela.title("Agenda Cirúrgica")
@@ -837,7 +896,7 @@ def abrir_filtros():
 
     janela_filtros.title("Filtros")
 
-    janela_filtros.geometry("300x250")
+    janela_filtros.geometry("350x400")
 
     agendada_var = tk.BooleanVar(value=True)
     confirmada_var = tk.BooleanVar(value=True)
@@ -868,16 +927,86 @@ def abrir_filtros():
         variable=cancelada_var
     ).pack(anchor="w", padx=20, pady=5)
 
+    tk.Label(
+        janela_filtros,
+        text="Médico"
+    ).pack(pady=(10,0))
+
+    combo_medico = ttk.Combobox(
+        janela_filtros
+    )
+
+    combo_medico.pack(pady=5)
+
+    tk.Label(
+        janela_filtros,
+        text="Hospital"
+    ).pack(pady=(10,0))
+
+    combo_hospital = ttk.Combobox(
+        janela_filtros
+    )
+
+    combo_hospital.pack(pady=5)
+
+    conexao = sqlite3.connect(BANCO)
+
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+    SELECT DISTINCT medico
+    FROM cirurgias
+    ORDER BY medico
+    """)
+
+    medicos = [
+        linha[0]
+        for linha in cursor.fetchall()
+    ]
+
+    cursor.execute("""
+    SELECT DISTINCT hospital
+    FROM cirurgias
+    ORDER BY hospital
+    """)
+
+    hospitais = [
+        linha[0]
+        for linha in cursor.fetchall()
+    ]
+
+    conexao.close()
+
+    combo_medico["values"] = [
+        "Todos"
+    ] + medicos
+
+    combo_hospital["values"] = [
+        "Todos"
+    ] + hospitais
+
+    combo_medico.set("Todos")
+
+    combo_hospital.set("Todos")
+
     tk.Button(
         janela_filtros,
-        text="aplicar_filtros",
+        text="Aplicar",
         command=lambda: aplicar_filtros(
             agendada_var.get(),
             confirmada_var.get(),
             realizada_var.get(),
-            cancelada_var.get()
+            cancelada_var.get(),
+            combo_medico.get(),
+            combo_hospital.get()
     )
-).pack(pady=10)
+).pack(pady=15)
+    
+    tk.Button(
+        janela_filtros,
+        text="Limpar Filtros",
+        command=lambda: atualizar_tabela()
+).pack(pady=5)
 
 
 
@@ -886,17 +1015,10 @@ def aplicar_filtros(
     agendada,
     confirmada,
     realizada,
-    cancelada
+    cancelada,
+    medico,
+    hospital
 ):
-
-    print("FUNÇÃO EXECUTOU")
-
-    print(
-        agendada,
-        confirmada,
-        realizada,
-        cancelada
-    )
 
     for item in tabela.get_children():
         tabela.delete(item)
@@ -918,6 +1040,16 @@ def aplicar_filtros(
 
         if status == "Cancelada" and not cancelada:
             continue
+
+        if medico != "Todos":
+
+            if registro[2] != medico:
+                continue
+
+        if hospital != "Todos":
+
+            if registro[3] != hospital:
+                continue
 
         tabela.insert(
             "",
