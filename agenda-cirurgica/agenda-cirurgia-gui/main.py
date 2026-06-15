@@ -26,6 +26,11 @@ BANCO = os.path.join(
 print("BANCO DEFINITIVO:")
 print(BANCO)
 
+print("=" * 40)
+print("BANCO UTILIZADO:")
+print(BANCO)
+print("=" * 40)
+
 cirurgias = []
 indice_edicao = None
 
@@ -1091,19 +1096,6 @@ def salvar_novo_status(
         "Status atualizado com sucesso!"
     )
 
-conexao = sqlite3.connect(
-r"C:\Users\TERMINAL-01\Desktop\Visual Studio\Projeto---Cadastro-Cirurgico---Agenda-Clinicas\cirurgias.db"
-)
-cursor = conexao.cursor()
-
-cursor.execute("SELECT * FROM cirurgias")
-
-print("BANCO:", BANCO)
-
-for linha in cursor.fetchall():
-    print(linha)
-
-conexao.close()
 
 adicionar_coluna_status()
 verificar_colunas()
