@@ -23,14 +23,6 @@ BANCO = os.path.join(
     "cirurgias.db"
 )
 
-print("BANCO DEFINITIVO:")
-print(BANCO)
-
-print("=" * 40)
-print("BANCO UTILIZADO:")
-print(BANCO)
-print("=" * 40)
-
 cirurgias = []
 indice_edicao = None
 
@@ -660,6 +652,7 @@ def gerar_grafico_hospitais():
         expand=True
     )
 
+
 def alterar_status():
 
     item_selecionado = tabela.selection()
@@ -713,8 +706,6 @@ def alterar_status():
     )
 ).pack(pady=10)
 
-def abrir_filtros():
-    print("Abrindo filtros")
 
     # Widgets
 
@@ -728,6 +719,105 @@ entrada_busca.bind(
     buscar_em_tempo_real
 )
     
+from tkinter import messagebox
+
+def abrir_filtros():
+
+    janela_filtros = tk.Toplevel(janela)
+
+    janela_filtros.title("Filtros")
+
+    janela_filtros.geometry("300x250")
+
+    agendada_var = tk.BooleanVar(value=True)
+    confirmada_var = tk.BooleanVar(value=True)
+    realizada_var = tk.BooleanVar(value=True)
+    cancelada_var = tk.BooleanVar(value=True)
+
+    tk.Checkbutton(
+        janela_filtros,
+        text="Agendada",
+        variable=agendada_var
+    ).pack(anchor="w", padx=20, pady=5)
+
+    tk.Checkbutton(
+        janela_filtros,
+        text="Confirmada",
+        variable=confirmada_var
+    ).pack(anchor="w", padx=20, pady=5)
+
+    tk.Checkbutton(
+        janela_filtros,
+        text="Realizada",
+        variable=realizada_var
+    ).pack(anchor="w", padx=20, pady=5)
+
+    tk.Checkbutton(
+        janela_filtros,
+        text="Cancelada",
+        variable=cancelada_var
+    ).pack(anchor="w", padx=20, pady=5)
+
+    tk.Button(
+        janela_filtros,
+        text="aplicar_filtros",
+        command=lambda: aplicar_filtros(
+            agendada_var.get(),
+            confirmada_var.get(),
+            realizada_var.get(),
+            cancelada_var.get()
+    )
+).pack(pady=10)
+
+
+
+
+def aplicar_filtros(
+    agendada,
+    confirmada,
+    realizada,
+    cancelada
+):
+
+    print("FUNÇÃO EXECUTOU")
+
+    print(
+        agendada,
+        confirmada,
+        realizada,
+        cancelada
+    )
+
+    for item in tabela.get_children():
+        tabela.delete(item)
+
+    registros = carregar_cirurgias_do_banco()
+
+    for registro in registros:
+
+        status = registro[8]
+
+        if status == "Agendada" and not agendada:
+            continue
+
+        if status == "Confirmada" and not confirmada:
+            continue
+
+        if status == "Realizada" and not realizada:
+            continue
+
+        if status == "Cancelada" and not cancelada:
+            continue
+
+        tabela.insert(
+            "",
+            "end",
+            values=registro
+        )
+    
+
+
+
 
 botao_cadastrar = tk.Button(aba_cadastro, text="Cadastrar", command=cadastrar)
 botao_cadastrar.pack(pady=10)   
@@ -743,13 +833,14 @@ botao_editar.pack(pady=5)
 botao_buscar = tk.Button(aba_agenda, text="Buscar", command=buscar_paciente)
 botao_buscar.pack(pady=5)
 
-botao_filtro = tk.Button(
+
+botao_filtros = tk.Button(
     aba_agenda,
     text="Filtros",
     command=abrir_filtros
 )
 
-botao_filtro.pack(pady=5)
+botao_filtros.pack(pady=5)
 
 botao_mostrar_todos = tk.Button(aba_agenda, text="Mostrar Todos", command=mostrar_todos)
 botao_mostrar_todos.pack(pady=5)
@@ -852,8 +943,6 @@ def atualizar_tabela():
 
     registros = carregar_cirurgias_do_banco()
 
-    print("TOTAL DE REGISTROS:", len(registros))
-    print(registros)
 
     for r in registros:
         print(r)
@@ -897,8 +986,6 @@ def criar_banco():
 
     import os
 
-    print(os.path.abspath("cirurgias.db"))
-
     conexao = sqlite3.connect(BANCO)
     cursor = conexao.cursor()
 
@@ -914,19 +1001,6 @@ def criar_banco():
             procedimento TEXT
         )
     """)
-
-    try:
-
-        cursor.execute("""
-            ALTER TABLE cirurgias
-            ADD COLUMN status TEXT
-        """)
-
-        print("Coluna STATUS criada!")
-
-    except sqlite3.OperationalError:
-
-        print("STATUS já existe.")
 
     conexao.commit()
     conexao.close()
@@ -1014,10 +1088,6 @@ def listar_cirurgias_banco():
 
     registros = cursor.fetchall()
 
-    print("\nRegistros no Banco de Dados:")
-
-    for registro in registros:
-        print(registro)
 
     conexao.close()
 
@@ -1026,18 +1096,6 @@ def adicionar_coluna_status():
     conexao = sqlite3.connect(BANCO)
     cursor = conexao.cursor()
 
-    try:
-
-        cursor.execute("""
-            ALTER TABLE cirurgias
-            ADD COLUMN status TEXT
-        """)
-
-        print("Coluna STATUS criada com sucesso!")
-
-    except sqlite3.OperationalError:
-
-        print("Coluna STATUS já existe.")
 
     conexao.commit()
     conexao.close()
@@ -1050,11 +1108,6 @@ def verificar_colunas():
     cursor.execute("PRAGMA table_info(cirurgias)")
 
     colunas = cursor.fetchall()
-
-    print("\nCOLUNAS DA TABELA:")
-
-    for coluna in colunas:
-        print(coluna)
 
     conexao.close()
 
