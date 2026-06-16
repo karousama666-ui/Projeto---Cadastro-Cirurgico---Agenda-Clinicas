@@ -1072,7 +1072,6 @@ def abrir_edicao(event):
 
     janela_edicao = tk.Toplevel(janela)
 
-    janela_edicao.grab_set()
     janela_edicao.focus_force()
 
     janela_edicao.title("Editar Cirurgia")
@@ -1092,6 +1091,8 @@ def abrir_edicao(event):
     entry_paciente.pack()
 
     entry_paciente.focus_set()
+
+    print("STATE:", entry_paciente["state"])
 
     entry_paciente.insert(
         0,
@@ -1271,10 +1272,6 @@ def abrir_edicao(event):
         command=salvar_alteracoes
     ).pack(pady=20)
 
-    tabela.bind(
-    "<Double-1>",
-    abrir_edicao
-)
 
 
 
@@ -1373,6 +1370,11 @@ tabela.tag_configure(
 tabela.tag_configure(
     "cancelada",
     background="#F8D7DA"
+)
+
+tabela.bind(
+    "<Double-1>",
+    abrir_edicao
 )
 
 scrollbar = ttk.Scrollbar(aba_agenda, orient="vertical", command=tabela.yview)
