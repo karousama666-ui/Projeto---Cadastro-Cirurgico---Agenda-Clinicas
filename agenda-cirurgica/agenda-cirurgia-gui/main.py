@@ -357,6 +357,9 @@ titulo_agenda = tk.Label(
 titulo_agenda.pack(pady=10)
 
 def cadastrar():
+
+    print("ENTROU NA FUNÇÃO CADASTRAR")
+
     paciente = entrada_paciente.get()
     medico = entrada_medico.get()
     hospital = entrada_hospital.get()
@@ -367,7 +370,6 @@ def cadastrar():
     status = combo_status.get()
 
     print("Status:", status)
-
 
     # Campos obrigatórios
 
@@ -380,26 +382,50 @@ def cadastrar():
         not horario or
         not procedimento
     ):
-        messagebox.showerror("Erro", "Todos os campos devem ser preenchidos!")
+        messagebox.showerror(
+            "Erro",
+            "Todos os campos devem ser preenchidos!"
+        )
         return
-    
-    # Validação de data no formato YYYY-MM-DD
+
+    # Validação da data
+
+
 
     try:
-        datetime.strptime(data, "%d/%m/%Y")
+        print("DATA DIGITADA:", data)
+
+        datetime.strptime(
+            data,
+            "%d/%m/%Y"
+        )
+
     except ValueError:
-        messagebox.showerror("Erro", "Data inválida! Use o formato DD/MM/YYYY.")
+        print("ENTROU NO EXCEPT DA DATA")
+
+        messagebox.showerror(
+            "Erro",
+            "Data inválida.\nUse DD/MM/AAAA."
+        )
+
         return
-    
-    # Horário no formato HH:MM
+
+    # Validação do horário
 
     try:
-        datetime.strptime(horario, "%H:%M")
-    except ValueError:
-        messagebox.showerror("Erro", "Horário inválido! Use o formato HH:MM.")
-        return
-    
+        datetime.strptime(
+            horario,
+            "%H:%M"
+        )
 
+    except ValueError:
+
+        messagebox.showerror(
+            "Erro",
+            "Horário inválido.\nUse HH:MM."
+        )
+
+        return
 
     print("Cadastro Realizado:")
     print(f"Paciente: {paciente}")
@@ -410,18 +436,16 @@ def cadastrar():
     print(f"Horário da Cirurgia: {horario}")
     print(f"Procedimento: {procedimento}")
 
-# Dicionário para armazenar os dados da cirurgia
-
     cirurgia = {
-    "paciente": paciente,
-    "medico": medico,
-    "hospital": hospital,
-    "convenio": convenio,
-    "data": data,
-    "horario": horario,
-    "procedimento": procedimento,
-    "status": status
-}
+        "paciente": paciente,
+        "medico": medico,
+        "hospital": hospital,
+        "convenio": convenio,
+        "data": data,
+        "horario": horario,
+        "procedimento": procedimento,
+        "status": status
+    }
 
     global indice_edicao
 
