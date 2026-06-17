@@ -156,6 +156,7 @@ def abrir_login():
     janela_login.mainloop()
 
 janela = tk.Tk()
+janela.withdraw()
 janela.title("Agenda Cirúrgica")
 janela.geometry("1920x1080")
 
@@ -1326,11 +1327,116 @@ def abrir_edicao(event):
     ).pack(pady=20)
 
 
+def salvar_usuario(usuario, senha, nivel):
+
+    conexao = sqlite3.connect(BANCO)
+
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+    INSERT INTO usuarios (
+        usuario,
+        senha,
+        nivel
+    )
+    VALUES (?, ?, ?)
+    """, (
+
+        usuario,
+        senha,
+        nivel
+
+    ))
+
+    conexao.commit()
+
+    conexao.close()
+
+def abrir_cadastro_usuario():
+
+    janela_usuario = tk.Toplevel(janela)
+
+    janela_usuario.title("Cadastrar Usuário")
+
+    janela_usuario.geometry("350x300")
+
+    tk.Label(
+        janela_usuario,
+        text="Usuário"
+    ).pack(pady=5)
+
+    entry_usuario = tk.Entry(
+        janela_usuario
+    )
+
+    entry_usuario.pack()
+
+    tk.Label(
+        janela_usuario,
+        text="Senha"
+    ).pack(pady=5)
+
+    entry_senha = tk.Entry(
+        janela_usuario
+    )
+
+    entry_senha.pack()
+
+    tk.Label(
+        janela_usuario,
+        text="Nível"
+    ).pack(pady=5)
+
+    combo_nivel = ttk.Combobox(
+        janela_usuario,
+        values=[
+            "administrador",
+            "usuario"
+        ],
+        state="readonly"
+    )
+
+    combo_nivel.pack()
+
+    combo_nivel.set("usuario")
+
+    def cadastrar_usuario():
+
+        salvar_usuario(
+
+            entry_usuario.get(),
+
+            entry_senha.get(),
+
+            combo_nivel.get()
+
+        )
+
+        messagebox.showinfo(
+            "Sucesso",
+            "Usuário cadastrado!"
+        )
+
+        janela_usuario.destroy()
+
+    tk.Button(
+        janela_usuario,
+        text="Salvar",
+        command=cadastrar_usuario
+    ).pack(pady=20)
 
 
 
 botao_cadastrar = tk.Button(aba_cadastro, text="Cadastrar", command=cadastrar)
-botao_cadastrar.pack(pady=10)   
+botao_cadastrar.pack(pady=10)
+
+botao_usuario = tk.Button(
+    aba_cadastro,
+    text="Cadastrar Usuário",
+    command=abrir_cadastro_usuario
+)
+
+botao_usuario.pack(pady=5)
 
 botao_excluir = tk.Button(aba_agenda, text="Excluir Cirurgia",
                           command=excluir_cirurgia)
@@ -1500,10 +1606,20 @@ def atualizar_tabela():
 
 def criar_banco():
 
-    import os
-
     conexao = sqlite3.connect(BANCO)
+
     cursor = conexao.cursor()
+
+    try:
+
+        cursor.execute("""
+        ALTER TABLE usuarios
+        ADD COLUMN nivel TEXT
+        """)
+
+    except sqlite3.OperationalError:
+
+        pass
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS cirurgias (
@@ -1514,41 +1630,48 @@ def criar_banco():
             convenio TEXT,
             data TEXT,
             horario TEXT,
-            procedimento TEXT
+            procedimento TEXT,
+            status TEXT
         )
     """)
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS usuarios (
-
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-
             usuario TEXT UNIQUE,
-
-            senha TEXT
-
+            senha TEXT,
+            nivel TEXT
         )
-   """)
-    
+    """)
+
     cursor.execute("""
-                   SELECT *
-                   FROM usuarios
-                   WHERE usuario = 'admin'
-                   """)
-    usuario = cursor.fetchone()
-    if not usuario:
+        SELECT *
+        FROM usuarios
+        WHERE usuario = ?
+    """, ("admin",))
+
+    usuario_admin = cursor.fetchone()
+
+    if not usuario_admin:
+
         cursor.execute("""
-            INSERT INTO usuarios (usuario, senha)
-            VALUES ('admin', '123')
-        """)
+            INSERT INTO usuarios (
+                usuario,
+                senha,
+                nivel
+            )
+            VALUES (?, ?, ?)
+        """, (
+
+            "admin",
+            "123",
+            "administrador"
+
+        ))
 
     conexao.commit()
+
     conexao.close()
-
-    
-
-criar_banco()
-atualizar_tabela()
 
 def salvar_cirurgia_no_banco(cirurgia):
     conexao = sqlite3.connect(BANCO)
@@ -1727,6 +1850,111 @@ if avisos:
         "Cirurgias Próximas",
         "\n".join(avisos)
     )
+
+
+def validar_login(usuario, senha):
+
+    conexao = sqlite3.connect(BANCO)
+
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+    SELECT *
+    FROM usuarios
+    WHERE usuario = ?
+    AND senha = ?
+    """, (
+
+        usuario,
+        senha
+
+    ))
+
+    resultado = cursor.fetchone()
+
+    conexao.close()
+
+    return resultado
+
+print(
+    validar_login(
+        "admin",
+        "123"
+    )
+)
+
+
+def abrir_login():
+
+    janela_login = tk.Toplevel()
+
+    janela_login.protocol(
+    "WM_DELETE_WINDOW",
+    lambda: None
+)
+
+    janela_login.title("Login")
+
+    janela_login.geometry("300x200")
+
+    janela_login.grab_set()
+
+    tk.Label(
+        janela_login,
+        text="Usuário"
+    ).pack(pady=5)
+
+    entry_usuario = tk.Entry(
+        janela_login
+    )
+
+    entry_usuario.pack()
+
+    tk.Label(
+        janela_login,
+        text="Senha"
+    ).pack(pady=5)
+
+    entry_senha = tk.Entry(
+        janela_login,
+        show="*"
+    )
+
+    entry_senha.pack()
+
+    def fazer_login():
+
+        usuario = entry_usuario.get()
+
+        senha = entry_senha.get()
+
+        resultado = validar_login(
+            usuario,
+            senha
+        )
+
+        if resultado:
+
+            janela.deiconify()
+
+            janela_login.destroy()
+
+        else:
+
+            messagebox.showerror(
+                "Erro",
+                "Usuário ou senha inválidos"
+            )
+
+    tk.Button(
+        janela_login,
+        text="Entrar",
+        command=fazer_login
+    ).pack(pady=15)
+
+
+
+abrir_login() 
 
 janela.mainloop()
 
