@@ -1433,7 +1433,7 @@ def abrir_usuarios():
 
     janela_usuarios.title("Usuários Cadastrados")
 
-    janela_usuarios.geometry("500x300")
+    janela_usuarios.geometry("500x350")
 
     tabela_usuarios = ttk.Treeview(
         janela_usuarios,
@@ -1470,9 +1470,6 @@ def abrir_usuarios():
         fill="both",
         expand=True
     )
-    
-
-
 
     conexao = sqlite3.connect(BANCO)
 
@@ -1490,23 +1487,29 @@ def abrir_usuarios():
     for usuario in usuarios:
 
         tabela_usuarios.insert(
-        "",
-        "end",
-        values=(
+            "",
+            "end",
+            values=(
 
-            usuario[0],
-            usuario[1],
-            "******",
-            usuario[3]
+                usuario[0],
+                usuario[1],
+                "******",
+                usuario[3]
 
+            )
         )
-    )
-        
-        tk.Button(
-    janela_usuarios,
-    text="Excluir Usuário",
-    command=excluir_usuario
-).pack(pady=10)
+
+    tk.Button(
+        janela_usuarios,
+        text="Editar Usuário",
+        command=editar_usuario
+    ).pack(pady=5)
+
+    tk.Button(
+        janela_usuarios,
+        text="Excluir Usuário",
+        command=excluir_usuario
+    ).pack(pady=5)
 
 def excluir_usuario():
 
@@ -1598,7 +1601,7 @@ def editar_usuario():
 
     janela_editar.title("Editar Usuário")
 
-    janela_editar.geometry("300x250")
+    janela_editar.geometry("400x400")
 
     tk.Label(
         janela_editar,
@@ -1650,11 +1653,17 @@ def editar_usuario():
 
     conexao.close()
 
-    if resultado:
+    if resultado and resultado[0]:
 
         combo_nivel.set(
             resultado[0]
-        )
+    )
+
+    else:
+
+        combo_nivel.set(
+            "usuario"
+    )
 
     def salvar():
 
@@ -1692,7 +1701,99 @@ def editar_usuario():
         text="Salvar",
         command=salvar
     ).pack(pady=20)
+
+
+def verificar_login():
+
+    global usuario_logado
+    global nivel_logado
+
+    usuario = entry_usuario.get()
+
+    senha = entry_senha.get()
+
+    conexao = sqlite3.connect(BANCO)
+
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+    SELECT nivel
+    FROM usuarios
+    WHERE usuario = ?
+    AND senha = ?
+    """, (
+
+        usuario,
+        senha
+
+    ))
+
+    resultado = cursor.fetchone()
+
+    conexao.close()
+
+    if resultado:
+
+        usuario_logado = usuario
+
+        nivel_logado = resultado[0]
+
+        label_usuario.config(
+            text=f"Usuário: {usuario_logado} ({nivel_logado})"
+        )
+
+        aplicar_permissoes()
+
+        janela_login.destroy()
+
+        janela.deiconify()
+
+    else:
+
+        messagebox.showerror(
+            "Erro",
+            "Usuário ou senha inválidos."
+        )
+
+def aplicar_permissoes():
+
+    if nivel_logado == "usuario":
+
+        botao_usuario.config(
+            state="disabled"
+        )
+
+        botao_usuarios.config(
+            state="disabled"
+        )
+
+    else:
+
+        botao_usuario.config(
+            state="normal"
+        )
+
+        botao_usuarios.config(
+            state="normal"
+        )
+
+def sair_sistema():
+
+    janela.destroy()
     
+def trocar_usuario():
+
+    global usuario_logado
+    global nivel_logado
+
+    usuario_logado = ""
+    nivel_logado = ""
+
+    label_usuario.config(text="")
+
+    janela.withdraw()
+
+    abrir_login()
 
 
 botao_cadastrar = tk.Button(aba_cadastro, text="Cadastrar", command=cadastrar)
@@ -1713,12 +1814,6 @@ botao_usuarios = tk.Button(
 )
 
 botao_usuarios.pack(pady=5)
-
-tk.Button(
-    janela_usuarios,
-    text="Editar Usuário",
-    command=editar_usuario
-).pack(pady=5)
 
 botao_excluir = tk.Button(aba_agenda, text="Excluir Cirurgia",
                           command=excluir_cirurgia)
@@ -1760,11 +1855,36 @@ botao_excel = tk.Button(
 
 botao_excel.pack(pady=5)
 
+label_usuario = tk.Label(
+    janela,
+    text=""
+)
+
+label_usuario.pack(pady=5)
+
+botao_trocar_usuario = tk.Button(
+    janela,
+    text="Trocar Usuário",
+    command=trocar_usuario
+)
+
+botao_trocar_usuario.pack(pady=5)
+
+botao_sair = tk.Button(
+    janela,
+    text="Sair",
+    command=sair_sistema
+)
+
+botao_sair.pack(pady=5)
+
 botao_grafico = tk.Button(
     aba_relatorios,
     text="Gráfico por Hospital",
     command=gerar_grafico_hospitais
 )
+
+
 
 botao_grafico.pack(pady=10)
 
@@ -1950,6 +2070,12 @@ def criar_banco():
             "administrador"
 
         ))
+
+    cursor.execute("""
+    UPDATE usuarios
+    SET nivel = 'administrador'
+    WHERE usuario = 'admin'
+    """)
 
     conexao.commit()
 
@@ -2235,6 +2361,9 @@ def abrir_login():
     ).pack(pady=15)
 
 
+
+
+janela.withdraw()
 
 abrir_login() 
 
