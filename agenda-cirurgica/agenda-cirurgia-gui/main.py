@@ -1,5 +1,6 @@
 import sqlite3
 import tkinter as tk
+from ttkbootstrap import Window
 from tkinter import ttk, messagebox
 from tkinter import messagebox
 import json
@@ -7,6 +8,8 @@ from datetime import datetime
 from tkcalendar import DateEntry
 import matplotlib.pyplot as plt
 from openpyxl import Workbook
+
+style = ttk.Style()
 
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -154,8 +157,11 @@ def abrir_login():
     ).pack(pady=15)
 
     janela_login.mainloop()
+    
 
-janela = tk.Tk()
+janela = Window(
+    themename="lumen"
+)
 janela.withdraw()
 janela.title("Agenda Cirúrgica")
 janela.geometry("1920x1080")
