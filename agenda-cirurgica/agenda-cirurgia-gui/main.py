@@ -1425,7 +1425,152 @@ def abrir_cadastro_usuario():
         command=cadastrar_usuario
     ).pack(pady=20)
 
+def abrir_usuarios():
 
+    global tabela_usuarios
+
+    janela_usuarios = tk.Toplevel(janela)
+
+    janela_usuarios.title("Usuários Cadastrados")
+
+    janela_usuarios.geometry("500x300")
+
+    tabela_usuarios = ttk.Treeview(
+        janela_usuarios,
+        columns=(
+            "ID",
+            "Usuário",
+            "Senha",
+            "Nível"
+        ),
+        show="headings"
+    )
+
+    tabela_usuarios.heading(
+        "ID",
+        text="ID"
+    )
+
+    tabela_usuarios.heading(
+        "Usuário",
+        text="Usuário"
+    )
+
+    tabela_usuarios.heading(
+        "Senha",
+        text="Senha"
+    )
+
+    tabela_usuarios.heading(
+        "Nível",
+        text="Nível"
+    )
+
+    tabela_usuarios.pack(
+        fill="both",
+        expand=True
+    )
+    
+
+
+
+    conexao = sqlite3.connect(BANCO)
+
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+    SELECT *
+    FROM usuarios
+    """)
+
+    usuarios = cursor.fetchall()
+
+    conexao.close()
+
+    for usuario in usuarios:
+
+        tabela_usuarios.insert(
+        "",
+        "end",
+        values=(
+
+            usuario[0],
+            usuario[1],
+            "******",
+            usuario[3]
+
+        )
+    )
+        
+        tk.Button(
+    janela_usuarios,
+    text="Excluir Usuário",
+    command=excluir_usuario
+).pack(pady=10)
+
+def excluir_usuario():
+
+    item = tabela_usuarios.selection()
+
+    if not item:
+
+        messagebox.showwarning(
+            "Aviso",
+            "Selecione um usuário."
+        )
+
+        return
+
+    valores = tabela_usuarios.item(
+        item[0],
+        "values"
+    )
+
+    id_usuario = valores[0]
+
+    usuario = valores[1]
+
+    if usuario == "admin":
+
+        messagebox.showerror(
+            "Erro",
+            "O usuário admin não pode ser excluído."
+        )
+
+        return
+
+    resposta = messagebox.askyesno(
+        "Confirmar",
+        f"Excluir usuário {usuario}?"
+    )
+
+    if not resposta:
+
+        return
+
+    conexao = sqlite3.connect(BANCO)
+
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+    DELETE FROM usuarios
+    WHERE id = ?
+    """, (
+
+        id_usuario,
+
+    ))
+
+    conexao.commit()
+
+    conexao.close()
+
+    tabela_usuarios.delete(item[0])
+
+    messagebox.showinfo(
+        "Sucesso",
+        "Usuário excluído."
+    )
 
 botao_cadastrar = tk.Button(aba_cadastro, text="Cadastrar", command=cadastrar)
 botao_cadastrar.pack(pady=10)
@@ -1437,6 +1582,14 @@ botao_usuario = tk.Button(
 )
 
 botao_usuario.pack(pady=5)
+
+botao_usuarios = tk.Button(
+    aba_cadastro,
+    text="Ver Usuários",
+    command=abrir_usuarios
+)
+
+botao_usuarios.pack(pady=5)
 
 botao_excluir = tk.Button(aba_agenda, text="Excluir Cirurgia",
                           command=excluir_cirurgia)
