@@ -358,8 +358,6 @@ titulo_agenda.pack(pady=10)
 
 def cadastrar():
 
-    print("ENTROU NA FUNÇÃO CADASTRAR")
-
     paciente = entrada_paciente.get()
     medico = entrada_medico.get()
     hospital = entrada_hospital.get()
@@ -393,15 +391,16 @@ def cadastrar():
 
 
     try:
-        print("DATA DIGITADA:", data)
 
-        datetime.strptime(
+        resultado = datetime.strptime(
             data,
             "%d/%m/%Y"
         )
 
+        print("Data Válida:", resultado)
+
+
     except ValueError:
-        print("ENTROU NO EXCEPT DA DATA")
 
         messagebox.showerror(
             "Erro",
@@ -1250,9 +1249,39 @@ def abrir_edicao(event):
 
     def salvar_alteracoes():
 
+        try:
+            datetime.strptime(
+                entry_data.get(),
+                "%d/%m/%Y"
+            )
+
+        except ValueError:
+            messagebox.showerror(
+                "Erro",
+                "Data Inválida"
+            )
+
+            return
+        
+        try:
+            datetime.strptime(
+                entry_horario.get(),
+                "%H:%M"
+            )
+
+        except ValueError:
+            messagebox.showerror(
+                "Erro",
+                "Horário inválido"
+            )
+
+            return
+
         conexao = sqlite3.connect(BANCO)
 
         cursor = conexao.cursor()
+
+    
 
         cursor.execute("""
         UPDATE cirurgias
