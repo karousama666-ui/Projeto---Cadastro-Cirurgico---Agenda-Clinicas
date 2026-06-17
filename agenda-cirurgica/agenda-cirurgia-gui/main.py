@@ -1572,6 +1572,129 @@ def excluir_usuario():
         "Usuário excluído."
     )
 
+def editar_usuario():
+
+    item = tabela_usuarios.selection()
+
+    if not item:
+
+        messagebox.showwarning(
+            "Aviso",
+            "Selecione um usuário."
+        )
+
+        return
+
+    valores = tabela_usuarios.item(
+        item[0],
+        "values"
+    )
+
+    id_usuario = valores[0]
+
+    usuario = valores[1]
+
+    janela_editar = tk.Toplevel(janela)
+
+    janela_editar.title("Editar Usuário")
+
+    janela_editar.geometry("300x250")
+
+    tk.Label(
+        janela_editar,
+        text=f"Usuário: {usuario}"
+    ).pack(pady=10)
+
+    tk.Label(
+        janela_editar,
+        text="Nova Senha"
+    ).pack()
+
+    entry_senha = tk.Entry(
+        janela_editar
+    )
+
+    entry_senha.pack()
+
+    tk.Label(
+        janela_editar,
+        text="Nível"
+    ).pack()
+
+    combo_nivel = ttk.Combobox(
+        janela_editar,
+        values=[
+            "administrador",
+            "usuario"
+        ],
+        state="readonly"
+    )
+
+    combo_nivel.pack()
+
+    conexao = sqlite3.connect(BANCO)
+
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+    SELECT nivel
+    FROM usuarios
+    WHERE id = ?
+    """, (
+
+        id_usuario,
+
+    ))
+
+    resultado = cursor.fetchone()
+
+    conexao.close()
+
+    if resultado:
+
+        combo_nivel.set(
+            resultado[0]
+        )
+
+    def salvar():
+
+        conexao = sqlite3.connect(BANCO)
+
+        cursor = conexao.cursor()
+
+        cursor.execute("""
+        UPDATE usuarios
+        SET
+            senha = ?,
+            nivel = ?
+        WHERE id = ?
+        """, (
+
+            entry_senha.get(),
+            combo_nivel.get(),
+            id_usuario
+
+        ))
+
+        conexao.commit()
+
+        conexao.close()
+
+        messagebox.showinfo(
+            "Sucesso",
+            "Usuário atualizado."
+        )
+
+        janela_editar.destroy()
+
+    tk.Button(
+        janela_editar,
+        text="Salvar",
+        command=salvar
+    ).pack(pady=20)
+    
+
+
 botao_cadastrar = tk.Button(aba_cadastro, text="Cadastrar", command=cadastrar)
 botao_cadastrar.pack(pady=10)
 
@@ -1590,6 +1713,12 @@ botao_usuarios = tk.Button(
 )
 
 botao_usuarios.pack(pady=5)
+
+tk.Button(
+    janela_usuarios,
+    text="Editar Usuário",
+    command=editar_usuario
+).pack(pady=5)
 
 botao_excluir = tk.Button(aba_agenda, text="Excluir Cirurgia",
                           command=excluir_cirurgia)
