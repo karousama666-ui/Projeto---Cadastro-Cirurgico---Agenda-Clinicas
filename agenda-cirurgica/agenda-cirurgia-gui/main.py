@@ -268,6 +268,29 @@ notebook.add(
     text="📊 Relatórios"
 )
 
+# ABA USUÁRIOS
+
+aba_usuarios = ttk.Frame(notebook)
+
+notebook.add(
+    aba_usuarios,
+    text="👥 Usuários"
+)
+
+frame_usuarios = ttk.LabelFrame(
+    aba_usuarios,
+    text="Gerenciamento de Usuários"
+)
+
+frame_usuarios.pack(
+    fill="both",
+    expand=True,
+    padx=20,
+    pady=20
+)
+
+
+
 notebook.pack(
     fill="both",
     expand=True,
@@ -1927,7 +1950,7 @@ botao_cadastrar = ttk.Button(
 botao_cadastrar.pack(pady=10)
 
 botao_usuario = ttk.Button(
-    aba_cadastro,
+    frame_usuarios,
     text="Cadastrar Usuário",
     command=abrir_cadastro_usuario,
     bootstyle="primary"
@@ -1936,7 +1959,7 @@ botao_usuario = ttk.Button(
 botao_usuario.pack(pady=5)
 
 botao_usuarios = ttk.Button(
-    aba_cadastro,
+    frame_usuarios,
     text="Ver Usuários",
     command=abrir_usuarios,
     bootstyle="info"
