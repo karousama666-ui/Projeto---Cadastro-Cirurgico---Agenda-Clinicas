@@ -221,20 +221,47 @@ logo_label.pack()
 
 notebook = ttk.Notebook(janela)
 
-aba_cadastro = ttk.Frame(notebook)
-aba_agenda = ttk.Frame(notebook)
-aba_relatorios = ttk.Frame(notebook)
+# ABA CADASTRO
 
+aba_cadastro = ttk.Frame(notebook)
 
 notebook.add(
     aba_cadastro,
     text="📋 Cadastro"
 )
 
+frame_cadastro = ttk.LabelFrame(
+    aba_cadastro,
+    text="Cadastro de Cirurgia"
+)
+
+frame_cadastro.pack(
+    padx=20,
+    pady=20,
+    fill="x"
+)
+
+conteudo_cadastro = ttk.Frame(
+    frame_cadastro
+)
+
+conteudo_cadastro.pack(
+    padx=20,
+    pady=20
+)
+
+# ABA AGENDA
+
+aba_agenda = ttk.Frame(notebook)
+
 notebook.add(
     aba_agenda,
     text="🏥 Agenda"
 )
+
+# ABA RELATÓRIOS
+
+aba_relatorios = ttk.Frame(notebook)
 
 notebook.add(
     aba_relatorios,
@@ -343,38 +370,38 @@ titulo.pack(pady=10)
 
 # Campo Paciente
 
-ttk.Label(aba_cadastro, text="Paciente:").pack()
+ttk.Label(frame_cadastro, text="Paciente:").pack()
 
-entrada_paciente = tk.Entry(aba_cadastro, width=40)
+entrada_paciente = tk.Entry(frame_cadastro, width=40)
 entrada_paciente.pack()
 
 # Campo Médico
 
-ttk.Label(aba_cadastro, text="Médico:").pack()
+ttk.Label(frame_cadastro, text="Médico:").pack()
 
-entrada_medico = tk.Entry(aba_cadastro, width=40)
+entrada_medico = tk.Entry(frame_cadastro, width=40)
 entrada_medico.pack()
 
 # Campo Hospital
 
-ttk.Label(aba_cadastro, text="Hospital:").pack()
+ttk.Label(frame_cadastro, text="Hospital:").pack()
 
-entrada_hospital = tk.Entry(aba_cadastro, width=40)
+entrada_hospital = tk.Entry(frame_cadastro, width=40)
 entrada_hospital.pack()
 
 # Campo Convênio
 
-ttk.Label(aba_cadastro, text="Convênio:").pack()
+ttk.Label(frame_cadastro, text="Convênio:").pack()
 
-entrada_convenio = tk.Entry(aba_cadastro, width=40)
+entrada_convenio = tk.Entry(frame_cadastro, width=40)
 entrada_convenio.pack()
 
 # Campo Data da Cirurgia
 
-ttk.Label(aba_cadastro, text="Data da Cirurgia:").pack()
+ttk.Label(frame_cadastro, text="Data da Cirurgia:").pack()
 
 entrada_data = DateEntry(
-    aba_cadastro,
+    frame_cadastro,
     width=20,
     date_pattern="dd/mm/yyyy"
 )
@@ -383,24 +410,24 @@ entrada_data.pack()
 
 # Campo Horário da Cirurgia
 
-ttk.Label(aba_cadastro, text="Horário da Cirurgia:").pack()
+ttk.Label(frame_cadastro, text="Horário da Cirurgia:").pack()
 
-entrada_horario = tk.Entry(aba_cadastro, width=40)
+entrada_horario = tk.Entry(frame_cadastro, width=40)
 entrada_horario.pack()
 
 # Campo Procedimento
 
-ttk.Label(aba_cadastro, text="Procedimento:").pack()
+ttk.Label(frame_cadastro, text="Procedimento:").pack()
 
-entrada_procedimento = tk.Entry(aba_cadastro, width=40)
+entrada_procedimento = tk.Entry(frame_cadastro, width=40)
 entrada_procedimento.pack()
 
 # NOVO CAMPO STATUS
 
-ttk.Label(aba_cadastro, text="Status:").pack()
+ttk.Label(frame_cadastro, text="Status:").pack()
 
 combo_status = ttk.Combobox(
-    aba_cadastro,
+    frame_cadastro,
     values=[
         "Agendada",
         "Confirmada",
@@ -1891,7 +1918,7 @@ botao_sair.pack(
 # ABA CADASTRO
 
 botao_cadastrar = ttk.Button(
-    aba_cadastro,
+    frame_cadastro,
     text="Cadastrar",
     command=cadastrar,
     bootstyle="success"
