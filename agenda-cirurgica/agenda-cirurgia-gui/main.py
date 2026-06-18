@@ -1,21 +1,17 @@
 import sqlite3
 import tkinter as tk
-from ttkbootstrap import Window
-from tkinter import ttk, messagebox
+import ttkbootstrap as ttk
 from tkinter import messagebox
 import json
 from datetime import datetime
 from tkcalendar import DateEntry
 import matplotlib.pyplot as plt
 from openpyxl import Workbook
-
-style = ttk.Style()
-
-
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-
 import os
+from PIL import Image, ImageTk
+
 
 BASE_DIR = os.path.dirname(
     os.path.abspath(__file__)
@@ -99,34 +95,45 @@ def gerar_grafico_status():
 
 def abrir_login():
 
-    janela_login = tk.Tk()
+    global janela_login
+    global entry_usuario
+    global entry_senha
+
+    janela_login = tk.Toplevel(janela)
 
     janela_login.title("Login")
-
     janela_login.geometry("300x200")
+    janela_login.grab_set()
 
-    tk.Label(
+    ttk.Label(
         janela_login,
         text="Usuário"
-    ).pack(pady=5)
+    ).pack()
 
-    entry_usuario = tk.Entry(
+    entry_usuario = ttk.Entry(
         janela_login
     )
 
     entry_usuario.pack()
 
-    tk.Label(
+    ttk.Label(
         janela_login,
         text="Senha"
-    ).pack(pady=5)
+    ).pack()
 
-    entry_senha = tk.Entry(
+    entry_senha = ttk.Entry(
         janela_login,
         show="*"
     )
 
     entry_senha.pack()
+
+    ttk.Button(
+        janela_login,
+        text="Entrar",
+        command=verificar_login,
+        bootstyle="success"
+    ).pack(pady=15)
 
     def entrar():
 
@@ -150,7 +157,7 @@ def abrir_login():
                 "Usuário ou senha inválidos"
             )
 
-    tk.Button(
+    ttk.Button(
         janela_login,
         text="Entrar",
         command=entrar
@@ -159,40 +166,95 @@ def abrir_login():
     janela_login.mainloop()
     
 
-janela = Window(
+janela = ttk.Window(
     themename="lumen"
 )
+
+caminho_logo = os.path.join(
+    BASE_DIR,
+    "logo_surgiflow.png"
+)
+
+imagem = Image.open(
+    caminho_logo
+)
+
+imagem = imagem.resize(
+    (900, 180)
+)
+
+logo = ImageTk.PhotoImage(
+    imagem
+)
+
+
+style = ttk.Style()
+
+style.configure(
+    "TButton",
+    font=("Segoe UI", 10),
+    padding=10
+)
+
+
 janela.withdraw()
+
 janela.title("Agenda Cirúrgica")
-janela.geometry("1920x1080")
+janela.state("zoomed")
+
+header = ttk.Frame(
+    janela,
+    padding=15
+)
+
+header.pack(
+    fill="x",
+    pady=5
+)
+
+logo_label = ttk.Label(
+    header,
+    image=logo
+)
+
+logo_label.pack()
 
 notebook = ttk.Notebook(janela)
 
-aba_cadastro = tk.Frame(notebook)
-aba_agenda = tk.Frame(notebook)
-aba_relatorios = tk.Frame(notebook)
+aba_cadastro = ttk.Frame(notebook)
+aba_agenda = ttk.Frame(notebook)
+aba_relatorios = ttk.Frame(notebook)
+
 
 notebook.add(
     aba_cadastro,
-    text="Cadastro"
+    text="📋 Cadastro"
 )
 
 notebook.add(
     aba_agenda,
-    text="Agenda"
+    text="🏥 Agenda"
 )
 
 notebook.add(
     aba_relatorios,
-    text="Relatórios"
+    text="📊 Relatórios"
 )
 
 notebook.pack(
+    fill="both",
     expand=True,
-    fill="both"
+    padx=20,
+    pady=10
 )
 
-titulo_relatorios = tk.Label(
+style.configure(
+    "TNotebook.Tab",
+    font=("Segoe UI", 11),
+    padding=[15, 8]
+)
+
+titulo_relatorios = ttk.Label(
     aba_relatorios,
     text="Relatórios",
     font=("Arial", 16)
@@ -200,7 +262,7 @@ titulo_relatorios = tk.Label(
 
 titulo_relatorios.pack(pady=10)
 
-label_total = tk.Label(
+label_total = ttk.Label(
     aba_relatorios,
     text="Total de Cirurgias: 0",
     font=("Arial", 12)
@@ -208,7 +270,7 @@ label_total = tk.Label(
 
 label_total.pack(pady=10)
 
-label_hospital = tk.Label(
+label_hospital = ttk.Label(
     aba_relatorios,
     text="Hospital mais utilizado: -",
     font=("Arial", 12)
@@ -216,7 +278,7 @@ label_hospital = tk.Label(
 
 label_hospital.pack(pady=5)
 
-label_convenio = tk.Label(
+label_convenio = ttk.Label(
     aba_relatorios,
     text="Convênio mais utilizado: -",
     font=("Arial", 12)
@@ -224,7 +286,7 @@ label_convenio = tk.Label(
 
 label_convenio.pack(pady=5)
 
-label_medico = tk.Label(
+label_medico = ttk.Label(
     aba_relatorios,
     text="Médico com mais cirurgias: -",
     font=("Arial", 12)
@@ -232,28 +294,28 @@ label_medico = tk.Label(
 
 label_medico.pack(pady=5)
 
-label_agendadas = tk.Label(
+label_agendadas = ttk.Label(
     aba_relatorios,
     text="Agendadas: 0"
 )
 
 label_agendadas.pack(pady=5)
 
-label_confirmadas = tk.Label(
+label_confirmadas = ttk.Label(
     aba_relatorios,
     text="Confirmadas: 0"
 )
 
 label_confirmadas.pack(pady=5)
 
-label_realizadas = tk.Label(
+label_realizadas = ttk.Label(
     aba_relatorios,
     text="Realizadas: 0"
 )
 
 label_realizadas.pack(pady=5)
 
-label_canceladas = tk.Label(
+label_canceladas = ttk.Label(
     aba_relatorios,
     text="Canceladas: 0"
 )
@@ -276,40 +338,40 @@ frame_grafico_status.pack(
 
 # Título
 
-titulo = tk.Label(aba_cadastro, text="Cadastro Cirúrgico", font=("Arial", 16))
+titulo = ttk.Label(aba_cadastro, text="Cadastro Cirúrgico", font=("Arial", 16))
 titulo.pack(pady=10)    
 
 # Campo Paciente
 
-tk.Label(aba_cadastro, text="Paciente:").pack()
+ttk.Label(aba_cadastro, text="Paciente:").pack()
 
 entrada_paciente = tk.Entry(aba_cadastro, width=40)
 entrada_paciente.pack()
 
 # Campo Médico
 
-tk.Label(aba_cadastro, text="Médico:").pack()
+ttk.Label(aba_cadastro, text="Médico:").pack()
 
 entrada_medico = tk.Entry(aba_cadastro, width=40)
 entrada_medico.pack()
 
 # Campo Hospital
 
-tk.Label(aba_cadastro, text="Hospital:").pack()
+ttk.Label(aba_cadastro, text="Hospital:").pack()
 
 entrada_hospital = tk.Entry(aba_cadastro, width=40)
 entrada_hospital.pack()
 
 # Campo Convênio
 
-tk.Label(aba_cadastro, text="Convênio:").pack()
+ttk.Label(aba_cadastro, text="Convênio:").pack()
 
 entrada_convenio = tk.Entry(aba_cadastro, width=40)
 entrada_convenio.pack()
 
 # Campo Data da Cirurgia
 
-tk.Label(aba_cadastro, text="Data da Cirurgia:").pack()
+ttk.Label(aba_cadastro, text="Data da Cirurgia:").pack()
 
 entrada_data = DateEntry(
     aba_cadastro,
@@ -321,21 +383,21 @@ entrada_data.pack()
 
 # Campo Horário da Cirurgia
 
-tk.Label(aba_cadastro, text="Horário da Cirurgia:").pack()
+ttk.Label(aba_cadastro, text="Horário da Cirurgia:").pack()
 
 entrada_horario = tk.Entry(aba_cadastro, width=40)
 entrada_horario.pack()
 
 # Campo Procedimento
 
-tk.Label(aba_cadastro, text="Procedimento:").pack()
+ttk.Label(aba_cadastro, text="Procedimento:").pack()
 
 entrada_procedimento = tk.Entry(aba_cadastro, width=40)
 entrada_procedimento.pack()
 
 # NOVO CAMPO STATUS
 
-tk.Label(aba_cadastro, text="Status:").pack()
+ttk.Label(aba_cadastro, text="Status:").pack()
 
 combo_status = ttk.Combobox(
     aba_cadastro,
@@ -355,7 +417,7 @@ combo_status.set("Agendada")
 
 # Agenda
 
-titulo_agenda = tk.Label(
+titulo_agenda = ttk.Label(
     aba_agenda,
     text="Agenda de Cirurgias",
     font=("Arial", 16)
@@ -875,7 +937,7 @@ def alterar_status():
     janela_status.title("Alterar Status")
     janela_status.geometry("300x200")
 
-    tk.Label(
+    ttk.Label(
         janela_status,
         text="Novo Status:"
     ).pack(pady=10)
@@ -895,7 +957,7 @@ def alterar_status():
 
     combo_status.pack(pady=10)
 
-    tk.Button(
+    ttk.Button(
         janela_status,
         text="Salvar",
         command=lambda: salvar_novo_status(
@@ -907,8 +969,6 @@ def alterar_status():
 
 
     # Widgets
-
-tk.Label(janela, text="Buscar por Paciente:").pack()
 
 entrada_busca = tk.Entry(aba_agenda, width=40)
 entrada_busca.pack()
@@ -957,7 +1017,7 @@ def abrir_filtros():
         variable=cancelada_var
     ).pack(anchor="w", padx=20, pady=5)
 
-    tk.Label(
+    ttk.Label(
         janela_filtros,
         text="Médico"
     ).pack(pady=(10,0))
@@ -968,7 +1028,7 @@ def abrir_filtros():
 
     combo_medico.pack(pady=5)
 
-    tk.Label(
+    ttk.Label(
         janela_filtros,
         text="Hospital"
     ).pack(pady=(10,0))
@@ -1019,7 +1079,7 @@ def abrir_filtros():
 
     combo_hospital.set("Todos")
 
-    tk.Button(
+    ttk.Button(
         janela_filtros,
         text="Aplicar",
         command=lambda: aplicar_filtros(
@@ -1032,7 +1092,7 @@ def abrir_filtros():
     )
 ).pack(pady=15)
     
-    tk.Button(
+    ttk.Button(
         janela_filtros,
         text="Limpar Filtros",
         command=lambda: atualizar_tabela()
@@ -1108,7 +1168,7 @@ def abrir_edicao(event):
 
     janela_edicao.geometry("500x700")
 
-    tk.Label(
+    ttk.Label(
         janela_edicao,
         text="Paciente"
     ).pack()
@@ -1129,7 +1189,7 @@ def abrir_edicao(event):
         valores[1]
     )
 
-    tk.Label(
+    ttk.Label(
         janela_edicao,
         text="Médico"
     ).pack()
@@ -1146,7 +1206,7 @@ def abrir_edicao(event):
         valores[2]
     )
 
-    tk.Label(
+    ttk.Label(
         janela_edicao,
         text="Hospital"
     ).pack()
@@ -1163,7 +1223,7 @@ def abrir_edicao(event):
         valores[3]
     )
 
-    tk.Label(
+    ttk.Label(
         janela_edicao,
         text="Convênio"
     ).pack()
@@ -1180,7 +1240,7 @@ def abrir_edicao(event):
         valores[4]
     )
 
-    tk.Label(
+    ttk.Label(
         janela_edicao,
         text="Data"
     ).pack()
@@ -1197,7 +1257,7 @@ def abrir_edicao(event):
         valores[5]
     )
 
-    tk.Label(
+    ttk.Label(
         janela_edicao,
         text="Horário"
     ).pack()
@@ -1214,7 +1274,7 @@ def abrir_edicao(event):
         valores[6]
     )
 
-    tk.Label(
+    ttk.Label(
         janela_edicao,
         text="Procedimento"
     ).pack()
@@ -1231,7 +1291,7 @@ def abrir_edicao(event):
         valores[7]
     )
 
-    tk.Label(
+    ttk.Label(
         janela_edicao,
         text="Status"
     ).pack()
@@ -1326,7 +1386,7 @@ def abrir_edicao(event):
 
         janela_edicao.destroy()
 
-    tk.Button(
+    ttk.Button(
         janela_edicao,
         text="Salvar Alterações",
         command=salvar_alteracoes
@@ -1366,7 +1426,7 @@ def abrir_cadastro_usuario():
 
     janela_usuario.geometry("350x300")
 
-    tk.Label(
+    ttk.Label(
         janela_usuario,
         text="Usuário"
     ).pack(pady=5)
@@ -1377,7 +1437,7 @@ def abrir_cadastro_usuario():
 
     entry_usuario.pack()
 
-    tk.Label(
+    ttk.Label(
         janela_usuario,
         text="Senha"
     ).pack(pady=5)
@@ -1388,7 +1448,7 @@ def abrir_cadastro_usuario():
 
     entry_senha.pack()
 
-    tk.Label(
+    ttk.Label(
         janela_usuario,
         text="Nível"
     ).pack(pady=5)
@@ -1425,7 +1485,7 @@ def abrir_cadastro_usuario():
 
         janela_usuario.destroy()
 
-    tk.Button(
+    ttk.Button(
         janela_usuario,
         text="Salvar",
         command=cadastrar_usuario
@@ -1505,13 +1565,13 @@ def abrir_usuarios():
             )
         )
 
-    tk.Button(
+    ttk.Button(
         janela_usuarios,
         text="Editar Usuário",
         command=editar_usuario
     ).pack(pady=5)
 
-    tk.Button(
+    ttk.Button(
         janela_usuarios,
         text="Excluir Usuário",
         command=excluir_usuario
@@ -1609,12 +1669,12 @@ def editar_usuario():
 
     janela_editar.geometry("400x400")
 
-    tk.Label(
+    ttk.Label(
         janela_editar,
         text=f"Usuário: {usuario}"
     ).pack(pady=10)
 
-    tk.Label(
+    ttk.Label(
         janela_editar,
         text="Nova Senha"
     ).pack()
@@ -1625,7 +1685,7 @@ def editar_usuario():
 
     entry_senha.pack()
 
-    tk.Label(
+    ttk.Label(
         janela_editar,
         text="Nível"
     ).pack()
@@ -1702,7 +1762,7 @@ def editar_usuario():
 
         janela_editar.destroy()
 
-    tk.Button(
+    ttk.Button(
         janela_editar,
         text="Salvar",
         command=salvar
@@ -1783,116 +1843,230 @@ def aplicar_permissoes():
             state="normal"
         )
 
-def sair_sistema():
+def sair():
 
     janela.destroy()
-    
+
+
 def trocar_usuario():
-
-    global usuario_logado
-    global nivel_logado
-
-    usuario_logado = ""
-    nivel_logado = ""
-
-    label_usuario.config(text="")
 
     janela.withdraw()
 
     abrir_login()
 
+frame_sessao = ttk.Frame(
+    janela
+)
 
-botao_cadastrar = tk.Button(aba_cadastro, text="Cadastrar", command=cadastrar)
+frame_sessao.pack(
+    pady=10
+)
+
+botao_trocar_usuario = ttk.Button(
+    frame_sessao,
+    text="Trocar Usuário",
+    command=trocar_usuario,
+    bootstyle="warning"
+)
+
+botao_trocar_usuario.pack(
+    side="left",
+    padx=5
+)
+
+botao_sair = ttk.Button(
+    frame_sessao,
+    text="Sair",
+    command=sair,
+    bootstyle="danger"
+)
+
+botao_sair.pack(
+    side="left",
+    padx=5
+)
+    
+
+
+# ABA CADASTRO
+
+botao_cadastrar = ttk.Button(
+    aba_cadastro,
+    text="Cadastrar",
+    command=cadastrar,
+    bootstyle="success"
+)
+
 botao_cadastrar.pack(pady=10)
 
-botao_usuario = tk.Button(
+botao_usuario = ttk.Button(
     aba_cadastro,
     text="Cadastrar Usuário",
-    command=abrir_cadastro_usuario
+    command=abrir_cadastro_usuario,
+    bootstyle="primary"
 )
 
 botao_usuario.pack(pady=5)
 
-botao_usuarios = tk.Button(
+botao_usuarios = ttk.Button(
     aba_cadastro,
     text="Ver Usuários",
-    command=abrir_usuarios
+    command=abrir_usuarios,
+    bootstyle="info"
 )
 
 botao_usuarios.pack(pady=5)
 
-botao_excluir = tk.Button(aba_agenda, text="Excluir Cirurgia",
-                          command=excluir_cirurgia)
-botao_excluir.pack(pady=5)
+# ABA AGENDA
 
-botao_editar = tk.Button(aba_agenda, text="Editar Cirurgia",
-                         command=editar_cirurgia)
-botao_editar.pack(pady=5)
+frame_acoes = ttk.Frame(
+    aba_agenda
+)
 
-botao_buscar = tk.Button(aba_agenda, text="Buscar", command=buscar_paciente)
-botao_buscar.pack(pady=5)
+frame_acoes.pack(
+    pady=10
+)
+
+botao_excluir = ttk.Button(
+    frame_acoes,
+    text="Excluir Cirurgia",
+    command=excluir_cirurgia,
+    bootstyle="danger"
+)
+
+botao_excluir.pack(
+    side="left",
+    padx=5
+)
+
+botao_editar = ttk.Button(
+    frame_acoes,
+    text="Editar Cirurgia",
+    command=editar_cirurgia,
+    bootstyle="info"
+)
+
+botao_editar.pack(
+    side="left",
+    padx=5
+)
+
+botao_buscar = ttk.Button(
+    frame_acoes,
+    text="Buscar",
+    command=buscar_paciente,
+    bootstyle="secondary"
+)
+
+botao_buscar.pack(
+    side="left",
+    padx=5
+)
 
 
 
-botao_filtros = tk.Button(
-    aba_agenda,
+botao_filtros = ttk.Button(
+    frame_acoes,
     text="Filtros",
-    command=abrir_filtros
+    command=abrir_filtros,
+    bootstyle="info"
 )
 
-botao_filtros.pack(pady=5)
+botao_filtros.pack(
+    side="left",
+    padx=5
+)
 
-botao_mostrar_todos = tk.Button(aba_agenda, text="Mostrar Todos", command=mostrar_todos)
-botao_mostrar_todos.pack(pady=5)
+botao_mostrar = ttk.Button(
+    frame_acoes,
+    text="Mostrar Todos",
+    command=mostrar_todos,
+    bootstyle="success"
+)
 
-botao_status = tk.Button(
-    aba_agenda,
+botao_mostrar.pack(
+    side="left",
+    padx=5
+)
+
+botao_status = ttk.Button(
+    frame_acoes,
     text="Alterar Status",
-    command=alterar_status
+    command=alterar_status,
+    bootstyle="primary"
 )
 
-botao_status.pack(pady=5)
+botao_status.pack(
+    side="left",
+    padx=5
+)
 
-botao_excel = tk.Button(
-    janela,
+botao_excel = ttk.Button(
+    frame_acoes,
     text="Exportar Excel",
-    command=exportar_excel
+    command=exportar_excel,
+    bootstyle="warning"
 )
 
-botao_excel.pack(pady=5)
+botao_excel.pack(
+    side="left",
+    padx=5
+)
 
-label_usuario = tk.Label(
+label_usuario = ttk.Label(
     janela,
     text=""
 )
 
 label_usuario.pack(pady=5)
 
-botao_trocar_usuario = tk.Button(
+botao_trocar_usuario = ttk.Button(
     janela,
     text="Trocar Usuário",
-    command=trocar_usuario
+    command=trocar_usuario,
+    bootstyle="dark"
 )
 
-botao_trocar_usuario.pack(pady=5)
+# RODAPÉ
 
-botao_sair = tk.Button(
-    janela,
+frame_sessao = ttk.Frame(
+    janela
+)
+
+frame_sessao.pack(
+    pady=10
+)
+
+botao_trocar_usuario = ttk.Button(
+    frame_sessao,
+    text="Trocar Usuário",
+    command=trocar_usuario,
+    bootstyle="warning"
+)
+
+botao_sair = ttk.Button(
+    frame_sessao,
     text="Sair",
-    command=sair_sistema
+    command=sair,
+    bootstyle="danger"
 )
 
-botao_sair.pack(pady=5)
+botao_sair.pack(
+    side="left",
+    padx=5
+)
 
-botao_grafico = tk.Button(
+# BOTÃO GRÁFICO
+
+botao_grafico = ttk.Button(
     aba_relatorios,
     text="Gráfico por Hospital",
     command=gerar_grafico_hospitais
 )
 
-
-
 botao_grafico.pack(pady=10)
+
+
 
 tabela = ttk.Treeview(
     aba_agenda,
@@ -2313,7 +2487,7 @@ def abrir_login():
 
     janela_login.grab_set()
 
-    tk.Label(
+    ttk.Label(
         janela_login,
         text="Usuário"
     ).pack(pady=5)
@@ -2324,7 +2498,7 @@ def abrir_login():
 
     entry_usuario.pack()
 
-    tk.Label(
+    ttk.Label(
         janela_login,
         text="Senha"
     ).pack(pady=5)
@@ -2360,7 +2534,7 @@ def abrir_login():
                 "Usuário ou senha inválidos"
             )
 
-    tk.Button(
+    ttk.Button(
         janela_login,
         text="Entrar",
         command=fazer_login
