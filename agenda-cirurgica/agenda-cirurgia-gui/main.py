@@ -289,6 +289,123 @@ frame_usuarios.pack(
     pady=20
 )
 
+frame_cadastro_usuario = ttk.LabelFrame(
+    frame_usuarios,
+    text="Cadastro de Usuário"
+)
+
+frame_cadastro_usuario.pack(
+    fill="x",
+    padx=10,
+    pady=10
+)
+
+ttk.Label(
+    frame_cadastro_usuario,
+    text="Usuário"
+).pack()
+
+entry_usuario_novo = ttk.Entry(
+    frame_cadastro_usuario,
+    width=40
+)
+
+entry_usuario_novo.pack(
+    pady=5
+)
+
+ttk.Label(
+    frame_cadastro_usuario,
+    text="Senha"
+).pack()
+
+entry_senha_nova = ttk.Entry(
+    frame_cadastro_usuario,
+    width=40
+)
+
+entry_senha_nova.pack(
+    pady=5
+)
+
+ttk.Label(
+    frame_cadastro_usuario,
+    text="Nível"
+).pack()
+
+combo_nivel_novo = ttk.Combobox(
+    frame_cadastro_usuario,
+    values=[
+        "administrador",
+        "usuario"
+    ],
+    state="readonly"
+)
+
+combo_nivel_novo.pack(
+    pady=5
+)
+
+ttk.Button(
+    frame_cadastro_usuario,
+    text="Cadastrar Usuário"
+).pack(
+    pady=10
+)
+
+
+frame_lista_usuarios = ttk.LabelFrame(
+    frame_usuarios,
+    text="Usuários Cadastrados"
+)
+
+frame_lista_usuarios.pack(
+    fill="both",
+    expand=True,
+    padx=10,
+    pady=10
+)
+
+tabela_usuarios = ttk.Treeview(
+    frame_lista_usuarios,
+    columns=(
+        "ID",
+        "Usuario",
+        "Nivel"
+    ),
+    show="headings"
+)
+
+tabela_usuarios.heading(
+    "ID",
+    text="ID"
+)
+
+tabela_usuarios.heading(
+    "Usuario",
+    text="Usuário"
+)
+
+tabela_usuarios.heading(
+    "Nivel",
+    text="Nível"
+)
+
+tabela_usuarios.pack(
+    fill="both",
+    expand=True,
+    pady=10
+)
+
+frame_botoes_usuario = ttk.Frame(
+    frame_lista_usuarios
+)
+
+frame_botoes_usuario.pack(
+    pady=10
+)
+
+
 
 
 notebook.pack(
@@ -1465,6 +1582,7 @@ def salvar_usuario(usuario, senha, nivel):
     ))
 
     conexao.commit()
+    carregar_usuarios()
 
     conexao.close()
 
@@ -1516,30 +1634,26 @@ def abrir_cadastro_usuario():
 
     combo_nivel.set("usuario")
 
-    def cadastrar_usuario():
+def cadastrar_usuario():
 
-        salvar_usuario(
+    salvar_usuario(
 
-            entry_usuario.get(),
+        entry_usuario.get(),
 
-            entry_senha.get(),
+        entry_senha.get(),
 
-            combo_nivel.get()
+        combo_nivel.get()
 
-        )
+    )
 
-        messagebox.showinfo(
-            "Sucesso",
-            "Usuário cadastrado!"
-        )
+    carregar_usuarios()
 
-        janela_usuario.destroy()
+    messagebox.showinfo(
+        "Sucesso",
+        "Usuário cadastrado!"
+    )
 
-    ttk.Button(
-        janela_usuario,
-        text="Salvar",
-        command=cadastrar_usuario
-    ).pack(pady=20)
+    janela_usuario.destroy()
 
 def abrir_usuarios():
 
@@ -1556,7 +1670,6 @@ def abrir_usuarios():
         columns=(
             "ID",
             "Usuário",
-            "Senha",
             "Nível"
         ),
         show="headings"
@@ -1573,26 +1686,44 @@ def abrir_usuarios():
     )
 
     tabela_usuarios.heading(
-        "Senha",
-        text="Senha"
-    )
-
-    tabela_usuarios.heading(
         "Nível",
         text="Nível"
     )
 
     tabela_usuarios.pack(
         fill="both",
-        expand=True
+        expand=True,
+        pady=10
     )
+
+    carregar_usuarios()
+
+    ttk.Button(
+        janela_usuarios,
+        text="Editar Usuário",
+        command=editar_usuario,
+        bootstyle="info"
+    ).pack(pady=5)
+
+    ttk.Button(
+        janela_usuarios,
+        text="Excluir Usuário",
+        command=excluir_usuario,
+        bootstyle="danger"
+    ).pack(pady=5)
+
+def carregar_usuarios():
+
+    for item in tabela_usuarios.get_children():
+
+        tabela_usuarios.delete(item)
 
     conexao = sqlite3.connect(BANCO)
 
     cursor = conexao.cursor()
 
     cursor.execute("""
-    SELECT *
+    SELECT id, usuario, nivel
     FROM usuarios
     """)
 
@@ -1609,23 +1740,10 @@ def abrir_usuarios():
 
                 usuario[0],
                 usuario[1],
-                "******",
-                usuario[3]
+                usuario[2]
 
             )
         )
-
-    ttk.Button(
-        janela_usuarios,
-        text="Editar Usuário",
-        command=editar_usuario
-    ).pack(pady=5)
-
-    ttk.Button(
-        janela_usuarios,
-        text="Excluir Usuário",
-        command=excluir_usuario
-    ).pack(pady=5)
 
 def excluir_usuario():
 
@@ -1780,6 +1898,7 @@ def editar_usuario():
         combo_nivel.set(
             "usuario"
     )
+        
 
     def salvar():
 
@@ -1818,6 +1937,25 @@ def editar_usuario():
         command=salvar
     ).pack(pady=20)
 
+ttk.Button(
+    frame_botoes_usuario,
+    text="Editar Usuário",
+    command=editar_usuario,
+    bootstyle="info"
+).pack(
+    side="left",
+    padx=5
+)
+
+ttk.Button(
+    frame_botoes_usuario,
+    text="Excluir Usuário",
+    command=excluir_usuario,
+    bootstyle="danger"
+).pack(
+    side="left",
+    padx=5
+)
 
 def verificar_login():
 
@@ -1948,24 +2086,6 @@ botao_cadastrar = ttk.Button(
 )
 
 botao_cadastrar.pack(pady=10)
-
-botao_usuario = ttk.Button(
-    frame_usuarios,
-    text="Cadastrar Usuário",
-    command=abrir_cadastro_usuario,
-    bootstyle="primary"
-)
-
-botao_usuario.pack(pady=5)
-
-botao_usuarios = ttk.Button(
-    frame_usuarios,
-    text="Ver Usuários",
-    command=abrir_usuarios,
-    bootstyle="info"
-)
-
-botao_usuarios.pack(pady=5)
 
 # ABA AGENDA
 
@@ -2593,9 +2713,13 @@ def abrir_login():
 
 
 
+
+
+
 janela.withdraw()
 
-abrir_login() 
+abrir_login()
+carregar_usuarios()
 
 janela.mainloop()
 
