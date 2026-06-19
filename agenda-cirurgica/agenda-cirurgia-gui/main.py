@@ -4,7 +4,7 @@ import ttkbootstrap as ttk
 from tkinter import messagebox
 import json
 from datetime import datetime
-from tkcalendar import DateEntry
+from tkcalendar import DateEntry, Calendar
 import matplotlib.pyplot as plt
 from openpyxl import Workbook
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -91,6 +91,85 @@ def gerar_grafico_status():
     canvas.get_tk_widget().pack(
         fill="both",
         expand=True
+    )
+
+def mostrar_cirurgias_dia(event):
+
+    data_selecionada = calendario_cirurgias.get_date()
+
+    conexao = sqlite3.connect(BANCO)
+
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+    SELECT paciente,
+           medico,
+           hospital,
+           horario
+    FROM cirurgias
+    WHERE data = ?
+    """, (data_selecionada,))
+
+    resultados = cursor.fetchall()
+
+    conexao.close()
+
+    label_resumo_dia.config(
+        text=f"{len(resultados)} cirurgia(s) encontrada(s)"
+    )
+
+    for item in tabela_calendario.get_children():
+
+        tabela_calendario.delete(item)
+
+    for linha in resultados:
+
+        tabela_calendario.insert(
+            "",
+            "end",
+            values=linha
+        )
+
+def atualizar_calendario():
+
+    calendario_cirurgias.calevent_remove('all')
+
+    conexao = sqlite3.connect(BANCO)
+
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+    SELECT data
+    FROM cirurgias
+    """)
+
+    datas = cursor.fetchall()
+
+    conexao.close()
+
+    for data in datas:
+
+        try:
+
+            data_evento = datetime.strptime(
+                data[0],
+                "%d/%m/%Y"
+            ).date()
+
+            calendario_cirurgias.calevent_create(
+                data_evento,
+                "Cirurgia",
+                "cirurgia"
+            )
+
+        except:
+
+            pass
+
+    calendario_cirurgias.tag_config(
+        "cirurgia",
+        background="green",
+        foreground="white"
     )
 
 def abrir_login():
@@ -288,6 +367,149 @@ aba_agenda = ttk.Frame(notebook)
 notebook.add(
     aba_agenda,
     text="🏥 Agenda"
+)
+
+# ABA CALENDÁRIO
+
+aba_calendario = ttk.Frame(notebook)
+
+notebook.add(
+    aba_calendario,
+    text="📅 Calendário"
+)
+
+# ==========================
+# TOPO
+# ==========================
+
+frame_calendario_topo = ttk.Frame(
+    aba_calendario
+)
+
+frame_calendario_topo.pack(
+    pady=20
+)
+
+# CALENDÁRIO
+
+calendario_cirurgias = Calendar(
+    frame_calendario_topo,
+    selectmode="day",
+    date_pattern="dd/mm/yyyy",
+    font=("Segoe UI", 18)
+)
+
+calendario_cirurgias.pack(
+    side="left",
+    padx=20
+)
+
+atualizar_calendario()
+
+# PAINEL LATERAL
+
+frame_detalhes_dia = ttk.LabelFrame(
+    frame_calendario_topo,
+    text="Resumo do Dia"
+)
+
+frame_detalhes_dia.pack(
+    side="left",
+    padx=20,
+    fill="both"
+)
+
+label_resumo_dia = ttk.Label(
+    frame_detalhes_dia,
+    text="Selecione uma data",
+    font=("Segoe UI", 11)
+)
+
+label_resumo_dia.pack(
+    padx=15,
+    pady=15
+)
+
+# ==========================
+# TABELA
+# ==========================
+
+frame_tabela_calendario = ttk.LabelFrame(
+    aba_calendario,
+    text="Cirurgias do Dia"
+)
+
+frame_tabela_calendario.pack(
+    fill="both",
+    expand=True,
+    padx=20,
+    pady=10
+)
+
+tabela_calendario = ttk.Treeview(
+    frame_tabela_calendario,
+    columns=(
+        "Paciente",
+        "Medico",
+        "Hospital",
+        "Horario"
+    ),
+    show="headings"
+)
+
+tabela_calendario.heading(
+    "Paciente",
+    text="Paciente"
+)
+
+tabela_calendario.heading(
+    "Medico",
+    text="Médico"
+)
+
+tabela_calendario.heading(
+    "Hospital",
+    text="Hospital"
+)
+
+tabela_calendario.heading(
+    "Horario",
+    text="Horário"
+)
+
+tabela_calendario.column(
+    "Paciente",
+    width=250
+)
+
+tabela_calendario.column(
+    "Medico",
+    width=250
+)
+
+tabela_calendario.column(
+    "Hospital",
+    width=250
+)
+
+tabela_calendario.column(
+    "Horario",
+    width=120,
+    anchor="center"
+)
+
+tabela_calendario.pack(
+    fill="both",
+    expand=True,
+    padx=10,
+    pady=10
+)
+
+# EVENTO DO CALENDÁRIO
+
+calendario_cirurgias.bind(
+    "<<CalendarSelected>>",
+    mostrar_cirurgias_dia
 )
 
 # ABA RELATÓRIOS
@@ -888,6 +1110,8 @@ def cadastrar():
         "Cirurgia cadastrada com sucesso!"
     )
 
+
+    atualizar_calendario()
     print(cirurgias)
 
 def carregar_dados():
@@ -2116,6 +2340,8 @@ def editar_usuario():
         text="Salvar",
         command=salvar
     ).pack(pady=20)
+
+
 
 # BOTAO EDITAR E EXCLUIR USUARIO
 
