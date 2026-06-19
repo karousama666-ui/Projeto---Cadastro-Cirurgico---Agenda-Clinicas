@@ -157,6 +157,37 @@ def abrir_login():
                 "Usuário ou senha inválidos"
             )
 
+def cadastrar_usuario_aba():
+
+    salvar_usuario(
+
+        entry_usuario_novo.get(),
+
+        entry_senha_nova.get(),
+
+        combo_nivel_novo.get()
+
+    )
+
+    carregar_usuarios()
+
+    entry_usuario_novo.delete(
+        0,
+        tk.END
+    )
+
+    entry_senha_nova.delete(
+        0,
+        tk.END
+    )
+
+    combo_nivel_novo.set("")
+
+    messagebox.showinfo(
+        "Sucesso",
+        "Usuário cadastrado!"
+    )
+
     ttk.Button(
         janela_login,
         text="Entrar",
@@ -348,7 +379,9 @@ combo_nivel_novo.pack(
 
 ttk.Button(
     frame_cadastro_usuario,
-    text="Cadastrar Usuário"
+    text="Cadastrar Usuário",
+    command=cadastrar_usuario_aba,
+    bootstyle="success"
 ).pack(
     pady=10
 )
@@ -404,8 +437,6 @@ frame_botoes_usuario = ttk.Frame(
 frame_botoes_usuario.pack(
     pady=10
 )
-
-
 
 
 notebook.pack(
@@ -1698,19 +1729,6 @@ def abrir_usuarios():
 
     carregar_usuarios()
 
-    ttk.Button(
-        janela_usuarios,
-        text="Editar Usuário",
-        command=editar_usuario,
-        bootstyle="info"
-    ).pack(pady=5)
-
-    ttk.Button(
-        janela_usuarios,
-        text="Excluir Usuário",
-        command=excluir_usuario,
-        bootstyle="danger"
-    ).pack(pady=5)
 
 def carregar_usuarios():
 
@@ -1937,6 +1955,8 @@ def editar_usuario():
         command=salvar
     ).pack(pady=20)
 
+# BOTAO EDITAR E EXCLUIR USUARIO
+
 ttk.Button(
     frame_botoes_usuario,
     text="Editar Usuário",
@@ -1956,6 +1976,8 @@ ttk.Button(
     side="left",
     padx=5
 )
+
+# --------------------------------------
 
 def verificar_login():
 
