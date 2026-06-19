@@ -520,16 +520,159 @@ label_canceladas = ttk.Label(
 
 label_canceladas.pack(pady=5)
 
-# COLOCA AQUI
+# =====================
+# CARDS DASHBOARD
+# =====================
 
-frame_grafico_status = tk.Frame(
+frame_cards = ttk.Frame(
     aba_relatorios
 )
 
-frame_grafico_status.pack(
+frame_cards.pack(
+    pady=20
+)
+
+
+# CARD TOTAL
+
+card_total = ttk.LabelFrame(
+    frame_cards,
+    text="Cirurgias"
+)
+
+card_total.pack(
+    side="left",
+    padx=10
+)
+
+
+valor_total = ttk.Label(
+    card_total,
+    text="0",
+    font=("Segoe UI", 28, "bold"),
+    bootstyle="primary"
+)
+
+valor_total.pack(
+    padx=50,
+    pady=30
+)
+
+
+# CARD AGENDADAS
+
+card_agendada = ttk.LabelFrame(
+    frame_cards,
+    text="Agendadas"
+)
+
+card_agendada.pack(
+    side="left",
+    padx=10
+)
+
+
+valor_agendada = ttk.Label(
+    card_agendada,
+    text="0",
+    font=("Segoe UI", 28, "bold"),
+    bootstyle="warning"
+)
+
+valor_agendada.pack(
+    padx=50,
+    pady=30
+)
+
+
+
+# CARD REALIZADAS
+
+card_realizada = ttk.LabelFrame(
+    frame_cards,
+    text="Realizadas"
+)
+
+card_realizada.pack(
+    side="left",
+    padx=10
+)
+
+
+valor_realizada = ttk.Label(
+    card_realizada,
+    text="0",
+    font=("Segoe UI", 28, "bold"),
+    bootstyle="success"
+)
+
+valor_realizada.pack(
+    padx=50,
+    pady=30
+)
+
+
+
+# CARD CANCELADAS
+
+card_cancelada = ttk.LabelFrame(
+    frame_cards,
+    text="Canceladas"
+)
+
+card_cancelada.pack(
+    side="left",
+    padx=10
+)
+
+
+valor_cancelada = ttk.Label(
+    card_cancelada,
+    text="0",
+    font=("Segoe UI", 28, "bold"),
+    bootstyle="danger"
+)
+
+valor_cancelada.pack(
+    padx=50,
+    pady=30
+)
+
+
+# GRÁFICOS
+
+frame_graficos = ttk.Frame(
+    aba_relatorios
+)
+
+frame_graficos.pack(
     fill="both",
     expand=True,
     pady=20
+)
+
+
+frame_grafico_status = ttk.Frame(
+    frame_graficos
+)
+
+frame_grafico_status.pack(
+    side="left",
+    fill="both",
+    expand=True,
+    padx=20
+)
+
+
+frame_grafico_hospital = ttk.Frame(
+    frame_graficos
+)
+
+frame_grafico_hospital.pack(
+    side="right",
+    fill="both",
+    expand=True,
+    padx=20
 )
 
 
@@ -972,6 +1115,22 @@ def atualizar_relatorios():
             text=f"Médico com mais cirurgias: {medico[0]}"
         )
 
+    valor_total.config(
+        text=total
+)
+
+    valor_agendada.config(
+        text=agendadas
+)
+
+    valor_realizada.config(
+        text=realizadas
+)
+
+    valor_cancelada.config(
+        text=canceladas
+)
+
     conexao.close()
 
 gerar_grafico_status()
@@ -1096,13 +1255,13 @@ def gerar_grafico_hospitais():
     grafico.set_xlabel("Hospital")
     grafico.set_ylabel("Quantidade")
 
-    for widget in frame_grafico.winfo_children():
+    for widget in frame_grafico_hospital.winfo_children():
         widget.destroy()
 
     canvas = FigureCanvasTkAgg(
         figura,
-        master=frame_grafico
-    )
+        master=frame_grafico_hospital
+)
 
     canvas.draw()
 
@@ -1110,6 +1269,9 @@ def gerar_grafico_hospitais():
         fill="both",
         expand=True
     )
+
+gerar_grafico_status()
+gerar_grafico_hospitais()
 
 
 def alterar_status():
