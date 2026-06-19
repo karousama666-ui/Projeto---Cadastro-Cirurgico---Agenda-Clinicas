@@ -114,9 +114,22 @@ def mostrar_cirurgias_dia(event):
 
     conexao.close()
 
-    label_resumo_dia.config(
-        text=f"{len(resultados)} cirurgia(s) encontrada(s)"
+    texto = f"{data_selecionada}\n\n"
+
+    for cirurgia in resultados:
+
+        texto += (
+            f"{cirurgia[3]} - {cirurgia[0]}\n"
+            f"{cirurgia[1]}\n\n"
     )
+
+    if not resultados:
+
+        texto += "Nenhuma cirurgia"
+
+    label_resumo_dia.config(
+    text=texto
+)
 
     for item in tabela_calendario.get_children():
 
