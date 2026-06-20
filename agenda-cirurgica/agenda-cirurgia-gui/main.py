@@ -325,6 +325,11 @@ janela.withdraw()
 janela.title("Agenda Cirúrgica")
 janela.state("zoomed")
 
+janela.minsize(
+    1200,
+    700
+)
+
 header = ttk.Frame(
     janela,
     padding=15
@@ -400,6 +405,7 @@ frame_calendario_topo = ttk.Frame(
 )
 
 frame_calendario_topo.pack(
+    fill="x",
     pady=20
 )
 
@@ -560,20 +566,24 @@ frame_cadastro_usuario = ttk.LabelFrame(
     text="Cadastro de Usuário"
 )
 
-frame_cadastro_usuario.pack(
-    fill="x",
-    padx=10,
-    pady=10
-)
-
 ttk.Label(
     frame_cadastro_usuario,
     text="Usuário"
 ).pack()
 
 entry_usuario_novo = ttk.Entry(
-    frame_cadastro_usuario,
-    width=40
+    frame_cadastro_usuario
+)
+
+entry_usuario_novo.pack(
+    fill="x",
+    padx=20,
+    pady=5
+)
+
+entry_usuario_novo.pack(
+    fill="x",
+    padx=20
 )
 
 entry_usuario_novo.pack(
