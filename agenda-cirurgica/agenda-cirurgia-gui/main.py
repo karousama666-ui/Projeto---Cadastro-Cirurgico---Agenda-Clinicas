@@ -326,6 +326,33 @@ def cadastrar_usuario_aba():
     janela_login.mainloop()
     
 
+def abrir_notificacoes():
+
+    janela_notificacao = tk.Toplevel(janela)
+
+    janela_notificacao.title(
+        "Notificações"
+    )
+
+    janela_notificacao.geometry(
+        "400x300"
+    )
+
+    ttk.Label(
+        janela_notificacao,
+        text="🔔 Notificações SurgiFlow",
+        font=("Segoe UI",14,"bold")
+    ).pack(
+        pady=20
+    )
+
+    ttk.Label(
+        janela_notificacao,
+        text="Em breve:\nAlertas de cirurgias próximas"
+    ).pack()
+
+# JANELA / HEADER
+
 janela = ttk.Window(
     themename="lumen"
 )
@@ -345,6 +372,25 @@ imagem = imagem.resize(
 
 logo = ImageTk.PhotoImage(
     imagem
+)
+
+# ÍCONE NOTIFICAÇÃO
+
+caminho_notificacao = os.path.join(
+    BASE_DIR,
+    "notificacao.png"
+)
+
+imagem_notificacao = Image.open(
+    caminho_notificacao
+)
+
+imagem_notificacao = imagem_notificacao.resize(
+    (35,35)
+)
+
+icone_notificacao = ImageTk.PhotoImage(
+    imagem_notificacao
 )
 
 
@@ -383,6 +429,20 @@ logo_label = ttk.Label(
 )
 
 logo_label.pack()
+
+# BOTÃO NOTIFICAÇÃO
+
+botao_notificacao = ttk.Button(
+    header,
+    image=icone_notificacao,
+    command=abrir_notificacoes,
+    bootstyle="link"
+)
+
+botao_notificacao.pack(
+    side="right",
+    padx=15
+)
 
 notebook = ttk.Notebook(janela)
 
