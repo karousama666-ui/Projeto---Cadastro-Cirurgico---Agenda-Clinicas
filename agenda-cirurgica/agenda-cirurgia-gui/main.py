@@ -185,6 +185,43 @@ def atualizar_calendario():
         foreground="white"
     )
 
+def abrir_detalhes_cirurgia():
+
+    item = tabela_calendario.selection()
+
+    if not item:
+        messagebox.showwarning(
+            "Aviso",
+            "Selecione uma cirurgia."
+        )
+        return
+
+    valores = tabela_calendario.item(
+        item[0],
+        "values"
+    )
+
+    janela_detalhes = tk.Toplevel(janela)
+
+    janela_detalhes.title(
+        "Detalhes da Cirurgia"
+    )
+
+    janela_detalhes.geometry(
+        "500x400"
+    )
+
+    ttk.Label(
+        janela_detalhes,
+        text="\n".join(
+            str(v) for v in valores
+        ),
+        font=("Segoe UI", 12)
+    ).pack(
+        padx=20,
+        pady=20
+    )
+
 def abrir_login():
 
     global janela_login
@@ -523,6 +560,23 @@ tabela_calendario.pack(
     padx=10,
     pady=10
 )
+
+frame_botoes_calendario = ttk.Frame(
+    frame_tabela_calendario
+)
+
+frame_botoes_calendario.pack(
+    pady=10
+)
+
+botao_detalhes = ttk.Button(
+    frame_botoes_calendario,
+    text="Ver Detalhes",
+    command=abrir_detalhes_cirurgia,
+    bootstyle="info"
+)
+
+botao_detalhes.pack()
 
 # EVENTO DO CALENDÁRIO
 
