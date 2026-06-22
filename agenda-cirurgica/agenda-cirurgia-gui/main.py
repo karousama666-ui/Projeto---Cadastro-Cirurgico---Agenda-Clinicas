@@ -351,6 +351,39 @@ def abrir_notificacoes():
         text="Em breve:\nAlertas de cirurgias próximas"
     ).pack()
 
+def atualizar_contador_notificacao():
+
+    conexao = sqlite3.connect(BANCO)
+    cursor = conexao.cursor()
+
+    hoje = datetime.now()
+
+    limite = hoje + timedelta(days=3)
+
+
+    cursor.execute(
+        """
+        SELECT COUNT(*)
+        FROM cirurgias
+        WHERE data >= ?
+        AND data <= ?
+        """,
+        (
+            hoje.strftime("%d/%m/%Y"),
+            limite.strftime("%d/%m/%Y")
+        )
+    )
+
+    total = cursor.fetchone()[0]
+
+
+    contador_notificacao.config(
+        text=str(total)
+    )
+
+    atualizar_contador_notificacao()
+    conexao.close()
+
 # JANELA / HEADER
 
 janela = ttk.Window(
@@ -430,18 +463,44 @@ logo_label = ttk.Label(
 
 logo_label.pack()
 
-# BOTÃO NOTIFICAÇÃO
+# FRAME DO SINO + CONTADOR
 
-botao_notificacao = ttk.Button(
-    header,
+frame_notificacao = ttk.Frame(
+    header
+)
+
+frame_notificacao.pack(
+    side="right",
+    padx=15
+)
+
+
+botao_notificacao = tk.Label(
+    frame_notificacao,
     image=icone_notificacao,
-    command=abrir_notificacoes,
-    bootstyle="link"
+    cursor="hand2"
+)
+
+botao_notificacao.bind(
+    "<Button-1>",
+    lambda e: abrir_notificacoes()
 )
 
 botao_notificacao.pack(
-    side="right",
-    padx=15
+    side="left"
+)
+
+
+contador_notificacao = ttk.Label(
+    frame_notificacao,
+    text="0",
+    bootstyle="danger",
+    font=("Segoe UI", 10, "bold")
+)
+
+contador_notificacao.pack(
+    side="left",
+    padx=3
 )
 
 notebook = ttk.Notebook(janela)
