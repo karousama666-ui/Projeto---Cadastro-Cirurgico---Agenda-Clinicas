@@ -1,3 +1,11 @@
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer
+)
+
+from reportlab.lib.styles import getSampleStyleSheet
+
 import sqlite3
 import tkinter as tk
 import ttkbootstrap as ttk
@@ -335,21 +343,75 @@ def abrir_notificacoes():
     )
 
     janela_notificacao.geometry(
-        "400x300"
+        "500x400"
     )
 
     ttk.Label(
         janela_notificacao,
         text="🔔 Notificações SurgiFlow",
-        font=("Segoe UI",14,"bold")
+        font=("Segoe UI", 14, "bold")
     ).pack(
-        pady=20
+        pady=10
     )
 
-    ttk.Label(
-        janela_notificacao,
-        text="Em breve:\nAlertas de cirurgias próximas"
-    ).pack()
+    conexao = sqlite3.connect(BANCO)
+
+    cursor = conexao.cursor()
+
+    hoje = datetime.now()
+
+    limite = hoje + timedelta(days=7)
+
+    cursor.execute(
+        """
+        SELECT paciente,
+               data,
+               horario,
+               hospital
+        FROM cirurgias
+        WHERE data >= ?
+        AND data <= ?
+        ORDER BY data
+        """,
+        (
+            hoje.strftime("%d/%m/%Y"),
+            limite.strftime("%d/%m/%Y")
+        )
+    )
+
+    notificacoes = cursor.fetchall()
+
+    conexao.close()
+
+    if not notificacoes:
+
+        ttk.Label(
+            janela_notificacao,
+            text="Nenhuma cirurgia próxima."
+        ).pack(
+            pady=20
+        )
+
+        return
+
+    for cirurgia in notificacoes:
+
+        texto = (
+            f"⚠ {cirurgia[0]}\n"
+            f"📅 {cirurgia[1]}\n"
+            f"🕒 {cirurgia[2]}\n"
+            f"🏥 {cirurgia[3]}"
+        )
+
+        ttk.Label(
+            janela_notificacao,
+            text=texto,
+            justify="left"
+        ).pack(
+            anchor="w",
+            padx=20,
+            pady=10
+        )
 
 def atualizar_contador_notificacao():
 
@@ -373,6 +435,7 @@ def atualizar_contador_notificacao():
             limite.strftime("%d/%m/%Y")
         )
     )
+    
 
     total = cursor.fetchone()[0]
 
@@ -381,8 +444,85 @@ def atualizar_contador_notificacao():
         text=str(total)
     )
 
-    atualizar_contador_notificacao()
+    print(
+    f"Notificações encontradas: {total}"
+)
+
     conexao.close()
+
+def gerar_pdf_agenda():
+
+    data_escolhida = calendario_cirurgias.get_date()
+
+    conexao = sqlite3.connect(BANCO)
+
+    cursor = conexao.cursor()
+
+    cursor.execute(
+        """
+        SELECT paciente,
+               medico,
+               hospital,
+               horario,
+               procedimento
+        FROM cirurgias
+        WHERE data = ?
+        """,
+        (data_escolhida,)
+    )
+
+    resultados = cursor.fetchall()
+
+    conexao.close()
+
+    nome_arquivo = (
+        f"agenda_{data_escolhida.replace('/','-')}.pdf"
+    )
+
+    pdf = SimpleDocTemplate(
+        nome_arquivo
+    )
+
+    estilos = getSampleStyleSheet()
+
+    elementos = []
+
+    elementos.append(
+        Paragraph(
+            f"Agenda Cirúrgica - {data_escolhida}",
+            estilos["Title"]
+        )
+    )
+
+    elementos.append(
+        Spacer(1,20)
+    )
+
+    for cirurgia in resultados:
+
+        texto = f"""
+        <b>Paciente:</b> {cirurgia[0]}<br/>
+        <b>Médico:</b> {cirurgia[1]}<br/>
+        <b>Hospital:</b> {cirurgia[2]}<br/>
+        <b>Horário:</b> {cirurgia[3]}<br/>
+        <b>Procedimento:</b> {cirurgia[4]}<br/><br/>
+        """
+
+        elementos.append(
+            Paragraph(
+                texto,
+                estilos["BodyText"]
+            )
+        )
+
+    pdf.build(
+        elementos
+    )
+
+    messagebox.showinfo(
+        "PDF",
+        f"PDF gerado:\n{nome_arquivo}"
+    )
 
 # JANELA / HEADER
 
@@ -632,6 +772,14 @@ tabela_calendario = ttk.Treeview(
     show="headings"
 )
 
+frame_pdf = ttk.Frame(
+    aba_calendario
+)
+
+frame_pdf.pack(
+    pady=10
+)
+
 tabela_calendario.heading(
     "Paciente",
     text="Paciente"
@@ -696,6 +844,25 @@ botao_detalhes = ttk.Button(
 )
 
 botao_detalhes.pack()
+
+#BOTÃO GERAR PDF
+
+ttk.Button(
+    frame_pdf,
+    text="📄 Gerar PDF",
+    command=gerar_pdf_agenda,
+    bootstyle="success"
+).pack()
+
+# GERAR PDF
+
+frame_pdf = ttk.Frame(
+    aba_calendario
+)
+
+frame_pdf.pack(
+    pady=10
+)
 
 # EVENTO DO CALENDÁRIO
 
@@ -1132,13 +1299,13 @@ entrada_convenio.pack()
 
 ttk.Label(frame_cadastro, text="Data da Cirurgia:").pack()
 
-entrada_data = DateEntry(
+entrada_data_cadastro = DateEntry(
     frame_cadastro,
     width=20,
     date_pattern="dd/mm/yyyy"
 )
 
-entrada_data.pack()
+entrada_data_cadastro.pack()
 
 # Campo Horário da Cirurgia
 
@@ -3206,15 +3373,6 @@ criar_banco()
 atualizar_tabela()
 atualizar_relatorios()
 
-avisos = verificar_cirurgias_proximas()
-
-if avisos:
-
-    messagebox.showinfo(
-        "Cirurgias Próximas",
-        "\n".join(avisos)
-    )
-
 
 def validar_login(usuario, senha):
 
@@ -3239,13 +3397,6 @@ def validar_login(usuario, senha):
     conexao.close()
 
     return resultado
-
-print(
-    validar_login(
-        "admin",
-        "123"
-    )
-)
 
 
 def abrir_login():
@@ -3309,6 +3460,8 @@ def abrir_login():
                 "Erro",
                 "Usuário ou senha inválidos"
             )
+
+        atualizar_contador_notificacao()
 
     ttk.Button(
         janela_login,
