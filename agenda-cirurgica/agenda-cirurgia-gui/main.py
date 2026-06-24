@@ -230,6 +230,14 @@ def abrir_detalhes_cirurgia():
         pady=20
     )
 
+    ttk.Button(
+    janela_detalhes,
+    text="✏️ Editar Cirurgia",
+    command=lambda: editar_cirurgia_calendario(valores)
+).pack(
+    pady=15
+)
+
 def abrir_login():
 
     global janela_login
@@ -1600,6 +1608,38 @@ def buscar_em_tempo_real(event=None):
                     cirurgia["procedimento"]
                 ))
 
+def editar_cirurgia_calendario(valores):
+
+    paciente = valores[0]
+
+    conexao = sqlite3.connect(BANCO)
+
+    cursor = conexao.cursor()
+
+    cursor.execute(
+        """
+        SELECT *
+        FROM cirurgias
+        WHERE paciente = ?
+        """,
+        (paciente,)
+    )
+
+    cirurgia = cursor.fetchone()
+
+    conexao.close()
+
+    if not cirurgia:
+
+        messagebox.showerror(
+            "Erro",
+            "Cirurgia não encontrada."
+        )
+
+        return
+
+    abrir_edicao_por_dados(cirurgia)
+
 def atualizar_relatorios():
 
     conexao = sqlite3.connect(BANCO)
@@ -2094,6 +2134,201 @@ def aplicar_filtros(
             values=registro
         )
     
+def abrir_edicao_por_dados(cirurgia):
+
+    janela_edicao = tk.Toplevel(janela)
+
+    janela_edicao.title(
+        "Editar Cirurgia"
+    )
+
+    janela_edicao.geometry(
+        "500x700"
+    )
+
+    ttk.Label(
+        janela_edicao,
+        text="Paciente"
+    ).pack()
+
+    entry_paciente = tk.Entry(
+        janela_edicao,
+        width=40
+    )
+
+    entry_paciente.pack()
+
+    entry_paciente.insert(
+        0,
+        cirurgia[1]
+    )
+
+    ttk.Label(
+        janela_edicao,
+        text="Médico"
+    ).pack()
+
+    entry_medico = tk.Entry(
+        janela_edicao,
+        width=40
+    )
+
+    entry_medico.pack()
+
+    entry_medico.insert(
+        0,
+        cirurgia[2]
+    )
+
+    ttk.Label(
+        janela_edicao,
+        text="Hospital"
+    ).pack()
+
+    entry_hospital = tk.Entry(
+        janela_edicao,
+        width=40
+    )
+
+    entry_hospital.pack()
+
+    entry_hospital.insert(
+        0,
+        cirurgia[3]
+    )
+
+    ttk.Label(
+        janela_edicao,
+        text="Status"
+    ).pack()
+
+    combo_status = ttk.Combobox(
+        janela_edicao,
+        values=[
+            "Agendada",
+            "Confirmada",
+            "Realizada",
+            "Cancelada"
+        ]
+    )
+
+    combo_status.pack()
+
+    combo_status.set(
+        cirurgia[8]
+    )
+
+
+
+    ttk.Button(
+    janela_edicao,
+    text="💾 Salvar Alterações",
+    command=lambda: salvar_edicao_calendario(
+        cirurgia[0],
+        entry_paciente.get(),
+        entry_medico.get(),
+        entry_hospital.get(),
+        combo_status.get(),
+        janela_edicao
+    )
+).pack(
+    pady=20
+)
+    
+def salvar_edicao_calendario(
+    id_cirurgia,
+    paciente,
+    medico,
+    hospital,
+    status,
+    janela_edicao
+):
+
+    conexao = sqlite3.connect(BANCO)
+
+    cursor = conexao.cursor()
+
+    cursor.execute(
+        """
+        UPDATE cirurgias
+        SET paciente = ?,
+            medico = ?,
+            hospital = ?,
+            status = ?
+        WHERE id = ?
+        """,
+        (
+            paciente,
+            medico,
+            hospital,
+            status,
+            id_cirurgia
+        )
+    )
+
+    conexao.commit()
+
+    conexao.close()
+
+    carregar_dados()
+
+    atualizar_contador_notificacao()
+
+    janela_edicao.destroy()
+
+    messagebox.showinfo(
+        "Sucesso",
+        "Cirurgia atualizada."
+    )
+
+def salvar_edicao_calendario(
+    id_cirurgia,
+    paciente,
+    medico,
+    hospital,
+    status,
+    janela_edicao
+):
+
+    conexao = sqlite3.connect(BANCO)
+
+    cursor = conexao.cursor()
+
+    cursor.execute(
+        """
+        UPDATE cirurgias
+        SET paciente = ?,
+            medico = ?,
+            hospital = ?,
+            status = ?
+        WHERE id = ?
+        """,
+        (
+            paciente,
+            medico,
+            hospital,
+            status,
+            id_cirurgia
+        )
+    )
+
+    conexao.commit()
+
+    conexao.close()
+
+    carregar_dados()
+
+    mostrar_cirurgias_dia()
+
+    atualizar_contador_notificacao()
+
+    janela_edicao.destroy()
+
+    messagebox.showinfo(
+        "Sucesso",
+        "Cirurgia atualizada."
+    )
+
 
 def abrir_edicao(event):
 
