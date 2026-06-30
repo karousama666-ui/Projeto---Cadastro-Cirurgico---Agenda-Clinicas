@@ -2,6 +2,9 @@ import customtkinter as ctk
 import sqlite3
 import os
 
+from PIL import Image
+from tkinter import messagebox
+
 
 # =========================
 # CONFIGURAÇÃO VISUAL
@@ -37,6 +40,8 @@ LILAS = "#DDD6FE"
 FUNDO = "#F8F7FF"
 TEXTO = "#24153F"
 
+USUARIO_LOGADO = "Administrador"
+
 BASE_DIR = os.path.dirname(
     os.path.abspath(__file__)
 )
@@ -47,9 +52,15 @@ BANCO = os.path.join(
     "cirurgias.db"
 )
 
-print(
-    "BANCO USADO:",
-    BANCO
+CAMINHO_LOGO = os.path.join(
+    BASE_DIR,
+    "logo_surgiflow.png"
+)
+
+logo_sidebar = ctk.CTkImage(
+    light_image=Image.open(CAMINHO_LOGO),
+    dark_image=Image.open(CAMINHO_LOGO),
+    size=(150, 150)
 )
 
 
@@ -67,7 +78,7 @@ sidebar = ctk.CTkFrame(
     app,
     width=240,
     corner_radius=0,
-    fg_color=ROXO
+    fg_color="#7154CE"
 )
 
 sidebar.pack(
@@ -78,19 +89,14 @@ sidebar.pack(
 
 # LOGO TEXTO
 
-titulo = ctk.CTkLabel(
+logo = ctk.CTkLabel(
     sidebar,
-    text="🩺\nSurgiFlow",
-    font=(
-        "Segoe UI",
-        28,
-        "bold"
-    ),
-    text_color="white"
+    image=logo_sidebar,
+    text=""
 )
 
-titulo.pack(
-    pady=40
+logo.pack(
+    pady=(35, 10)
 )
 
 subtitulo = ctk.CTkLabel(
@@ -100,7 +106,7 @@ subtitulo = ctk.CTkLabel(
         "Segoe UI",
         14
     ),
-    text_color=LILAS
+    text_color="#F8F7FC"
 )
 
 subtitulo.pack(
@@ -120,7 +126,7 @@ def criar_botao(texto, comando):
         width=190,
         height=40,
         corner_radius=10,
-        fg_color="#E9D5FF",
+        fg_color="#D8CAEB",
         text_color=TEXTO,
         hover_color="#C084FC",
         command=comando
@@ -438,6 +444,16 @@ def mostrar_relatorios():
     )
 
 
+def sair_do_sistema():
+
+    resposta = messagebox.askyesno(
+        "Encerrar sessão",
+        "Deseja realmente sair do SurgiFlow?"
+    )
+
+    if resposta:
+        janela.destroy()
+
 
 # =========================
 # BOTÕES SIDEBAR
@@ -469,7 +485,156 @@ criar_botao(
     mostrar_relatorios
 )
 
+# espaço
 
+ctk.CTkLabel(
+    sidebar,
+    text="",
+).pack(
+    expand=True
+)
+
+# =========================
+# RODAPÉ SIDEBAR
+# =========================
+
+rodape = ctk.CTkFrame(
+    sidebar,
+    fg_color="transparent"
+)
+
+rodape.pack(
+    side="bottom",
+    fill="x",
+    padx=15,
+    pady=20
+)
+
+#Linha
+
+ctk.CTkFrame(
+    rodape,
+    height=2,
+    fg_color="#7E69C6"
+).pack(
+    fill="x",
+    pady=(0,15)
+)
+
+# USUÁRIO
+
+usuario = ctk.CTkLabel(
+    rodape,
+    text="👤  " + USUARIO_LOGADO,
+    font=(
+        "Segoe UI",
+        15,
+        "bold"
+    ),
+    text_color="white"
+)
+
+usuario.pack(
+    anchor="w"
+)
+
+# CARGO
+
+cargo = ctk.CTkLabel(
+    rodape,
+    text="Administrador",
+    font=(
+        "Segoe UI",
+        11
+    ),
+    text_color="#D8CCFF"
+)
+
+cargo.pack(
+    anchor="w",
+    pady=(0,12)
+)
+
+# BOTÃO NOTIFICAÇÃO
+
+botao_notificacao = ctk.CTkButton(
+    rodape,
+    text="🔔  Notificações (2)",
+    height=35,
+    fg_color="transparent",
+    hover_color="#7E69C6",
+    anchor="w"
+)
+
+botao_notificacao.pack(
+    fill="x",
+    pady=2
+)
+
+# BOTÃO CONFIGURAÇÃO
+
+botao_config = ctk.CTkButton(
+    rodape,
+    text="⚙ Configurações",
+    height=35,
+    fg_color="transparent",
+    hover_color="#7E69C6",
+    anchor="w"
+)
+
+botao_config.pack(
+    fill="x",
+    pady=2
+)
+
+# BOTÃO TROCAR USUÁRIO
+
+botao_usuario = ctk.CTkButton(
+    rodape,
+    text="🔄 Trocar usuário",
+    height=35,
+    fg_color="transparent",
+    hover_color="#7E69C6",
+    anchor="w"
+)
+
+botao_usuario.pack(
+    fill="x",
+    pady=2
+)
+
+# BOTÃO BLOQUEAR
+
+botao_bloquear = ctk.CTkButton(
+    rodape,
+    text="🔒 Bloquear",
+    height=35,
+    fg_color="transparent",
+    hover_color="#7E69C6",
+    anchor="w"
+)
+
+botao_bloquear.pack(
+    fill="x",
+    pady=2
+)
+
+# BOTÃO SAIR
+
+botao_sair = ctk.CTkButton(
+    rodape,
+    text="🚪 Sair",
+    fg_color="#D64550",
+    hover_color="#B92F3A",
+    text_color="white",
+    height=38,
+    command=sair_do_sistema
+)
+
+botao_sair.pack(
+    fill="x",
+    pady=(8,0)
+)
 
 # abre dashboard inicial
 
