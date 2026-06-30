@@ -101,7 +101,7 @@ def gerar_grafico_status():
         expand=True
     )
 
-def mostrar_cirurgias_dia(event):
+def mostrar_cirurgias_dia(event=None):
 
     data_selecionada = calendario_cirurgias.get_date()
 
@@ -2146,6 +2146,8 @@ def abrir_edicao_por_dados(cirurgia):
         "500x700"
     )
 
+    # ---------------- PACIENTE ----------------
+
     ttk.Label(
         janela_edicao,
         text="Paciente"
@@ -2162,6 +2164,8 @@ def abrir_edicao_por_dados(cirurgia):
         0,
         cirurgia[1]
     )
+
+    # ---------------- MÉDICO ----------------
 
     ttk.Label(
         janela_edicao,
@@ -2180,6 +2184,8 @@ def abrir_edicao_por_dados(cirurgia):
         cirurgia[2]
     )
 
+    # ---------------- HOSPITAL ----------------
+
     ttk.Label(
         janela_edicao,
         text="Hospital"
@@ -2197,6 +2203,84 @@ def abrir_edicao_por_dados(cirurgia):
         cirurgia[3]
     )
 
+    # ---------------- CONVÊNIO ----------------
+
+    ttk.Label(
+        janela_edicao,
+        text="Convênio"
+    ).pack()
+
+    entry_convenio = tk.Entry(
+        janela_edicao,
+        width=40
+    )
+
+    entry_convenio.pack()
+
+    entry_convenio.insert(
+        0,
+        cirurgia[4]
+    )
+
+    # ---------------- DATA ----------------
+
+    ttk.Label(
+        janela_edicao,
+        text="Data"
+    ).pack()
+
+    entry_data = tk.Entry(
+        janela_edicao,
+        width=40
+    )
+
+    entry_data.pack()
+
+    entry_data.insert(
+        0,
+        cirurgia[5]
+    )
+
+    # ---------------- HORÁRIO ----------------
+
+    ttk.Label(
+        janela_edicao,
+        text="Horário"
+    ).pack()
+
+    entry_horario = tk.Entry(
+        janela_edicao,
+        width=40
+    )
+
+    entry_horario.pack()
+
+    entry_horario.insert(
+        0,
+        cirurgia[6]
+    )
+
+    # ---------------- PROCEDIMENTO ----------------
+
+    ttk.Label(
+        janela_edicao,
+        text="Procedimento"
+    ).pack()
+
+    entry_procedimento = tk.Entry(
+        janela_edicao,
+        width=40
+    )
+
+    entry_procedimento.pack()
+
+    entry_procedimento.insert(
+        0,
+        cirurgia[7]
+    )
+
+    # ---------------- STATUS ----------------
+
     ttk.Label(
         janela_edicao,
         text="Status"
@@ -2209,7 +2293,8 @@ def abrir_edicao_por_dados(cirurgia):
             "Confirmada",
             "Realizada",
             "Cancelada"
-        ]
+        ],
+        state="readonly"
     )
 
     combo_status.pack()
@@ -2218,28 +2303,36 @@ def abrir_edicao_por_dados(cirurgia):
         cirurgia[8]
     )
 
-
+    # ---------------- BOTÃO ----------------
 
     ttk.Button(
-    janela_edicao,
-    text="💾 Salvar Alterações",
-    command=lambda: salvar_edicao_calendario(
-        cirurgia[0],
-        entry_paciente.get(),
-        entry_medico.get(),
-        entry_hospital.get(),
-        combo_status.get(),
-        janela_edicao
+        janela_edicao,
+        text="💾 Salvar Alterações",
+        command=lambda: salvar_edicao_calendario(
+            cirurgia[0],
+            entry_paciente.get(),
+            entry_medico.get(),
+            entry_hospital.get(),
+            entry_convenio.get(),
+            entry_data.get(),
+            entry_horario.get(),
+            entry_procedimento.get(),
+            combo_status.get(),
+            janela_edicao
+        )
+    ).pack(
+        pady=20
     )
-).pack(
-    pady=20
-)
     
 def salvar_edicao_calendario(
     id_cirurgia,
     paciente,
     medico,
     hospital,
+    convenio,
+    data,
+    horario,
+    procedimento,
     status,
     janela_edicao
 ):
@@ -2251,9 +2344,14 @@ def salvar_edicao_calendario(
     cursor.execute(
         """
         UPDATE cirurgias
-        SET paciente = ?,
+        SET
+            paciente = ?,
             medico = ?,
             hospital = ?,
+            convenio = ?,
+            data = ?,
+            horario = ?,
+            procedimento = ?,
             status = ?
         WHERE id = ?
         """,
@@ -2261,52 +2359,10 @@ def salvar_edicao_calendario(
             paciente,
             medico,
             hospital,
-            status,
-            id_cirurgia
-        )
-    )
-
-    conexao.commit()
-
-    conexao.close()
-
-    carregar_dados()
-
-    atualizar_contador_notificacao()
-
-    janela_edicao.destroy()
-
-    messagebox.showinfo(
-        "Sucesso",
-        "Cirurgia atualizada."
-    )
-
-def salvar_edicao_calendario(
-    id_cirurgia,
-    paciente,
-    medico,
-    hospital,
-    status,
-    janela_edicao
-):
-
-    conexao = sqlite3.connect(BANCO)
-
-    cursor = conexao.cursor()
-
-    cursor.execute(
-        """
-        UPDATE cirurgias
-        SET paciente = ?,
-            medico = ?,
-            hospital = ?,
-            status = ?
-        WHERE id = ?
-        """,
-        (
-            paciente,
-            medico,
-            hospital,
+            convenio,
+            data,
+            horario,
+            procedimento,
             status,
             id_cirurgia
         )
@@ -2320,13 +2376,15 @@ def salvar_edicao_calendario(
 
     mostrar_cirurgias_dia()
 
+    atualizar_relatorios()
+
     atualizar_contador_notificacao()
 
     janela_edicao.destroy()
 
     messagebox.showinfo(
         "Sucesso",
-        "Cirurgia atualizada."
+        "Cirurgia atualizada com sucesso!"
     )
 
 
