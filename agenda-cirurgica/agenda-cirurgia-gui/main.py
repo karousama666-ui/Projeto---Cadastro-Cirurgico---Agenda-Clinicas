@@ -6,8 +6,11 @@ from reportlab.platypus import (
 
 from reportlab.lib.styles import getSampleStyleSheet
 
+
 import sqlite3
 import tkinter as tk
+from config import BANCO, BASE_DIR
+from database import conectar
 import ttkbootstrap as ttk
 from tkinter import messagebox
 import json
@@ -20,15 +23,6 @@ from matplotlib.figure import Figure
 import os
 from PIL import Image, ImageTk
 
-
-BASE_DIR = os.path.dirname(
-    os.path.abspath(__file__)
-)
-
-BANCO = os.path.join(
-    BASE_DIR,
-    "cirurgias.db"
-)
 
 cirurgias = []
 indice_edicao = None
@@ -423,7 +417,7 @@ def abrir_notificacoes():
 
 def atualizar_contador_notificacao():
 
-    conexao = sqlite3.connect(BANCO)
+    conexao = conectar()
     cursor = conexao.cursor()
 
     hoje = datetime.now()
@@ -531,6 +525,8 @@ def gerar_pdf_agenda():
         "PDF",
         f"PDF gerado:\n{nome_arquivo}"
     )
+
+
 
 # JANELA / HEADER
 
@@ -649,6 +645,19 @@ contador_notificacao = ttk.Label(
 contador_notificacao.pack(
     side="left",
     padx=3
+)
+
+# USUÁRIO HEADER
+
+usuario_header = ttk.Label(
+    header,
+    text="👤 Administrador",
+    font=("Segoe UI", 11)
+)
+
+usuario_header.pack(
+    side="right",
+    padx=15
 )
 
 notebook = ttk.Notebook(janela)
