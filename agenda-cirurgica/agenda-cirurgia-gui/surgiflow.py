@@ -59,9 +59,9 @@ frame_dashboard = ctk.CTkFrame(
 
 sidebar = ctk.CTkFrame(
     frame_dashboard,
-    width=70,
+    width=100,
     corner_radius=0,
-    fg_color="#EDE9FE"
+    fg_color="#B1A2F3"
 )
 
 sidebar.pack(
@@ -72,7 +72,7 @@ sidebar.pack(
 logo_sidebar = ctk.CTkImage(
     light_image=Image.open(CAMINHO_LOGO),
     dark_image=Image.open(CAMINHO_LOGO),
-    size=(100,100)
+    size=(150,150)
 )
 
 
@@ -112,22 +112,6 @@ dashboard_container.pack(
     expand=True
 )
 
-# ===========================
-# SIDEBAR
-# ===========================
-
-sidebar = ctk.CTkFrame(
-    dashboard_container,
-    width=240,
-    corner_radius=0,
-    fg_color="#7154CE"
-)
-
-sidebar.pack(
-    side="left",
-    fill="y"
-)
-
 
 
 # ===========================
@@ -136,7 +120,7 @@ sidebar.pack(
 
 conteudo = ctk.CTkFrame(
     dashboard_container,
-    fg_color="#F8F7FF",
+    fg_color="#F7F7F7",
     corner_radius=0
 )
 
@@ -170,24 +154,6 @@ topbar = ctk.CTkFrame(
 topbar.pack(
     fill="x",
     pady=(0,15)
-)
-
-
-# lado esquerdo
-
-titulo_top = ctk.CTkLabel(
-    topbar,
-    text="SurgiFlow",
-    font=(
-        "Segoe UI",
-        24,
-        "bold"
-    ),
-    text_color="#2D2438"
-)
-
-titulo_top.pack(
-    side="left"
 )
 
 
@@ -465,76 +431,6 @@ def verificar_login():
             "Usuário ou senha inválidos"
         )
 
-# FRAME CARDS
-
-frame_cards = ctk.CTkFrame(
-    conteudo_principal,
-    fg_color="transparent"
-)
-
-frame_cards.pack(
-    anchor="w"
-)
-
-cards = ctk.CTkFrame(
-    frame_cards,
-    fg_color="transparent"
-)
-
-cards.pack(
-    anchor="w"
-)
-
-card_total, lbl_total = criar_card(
-    cards,
-    "🩺 Cirurgias",
-    0,
-    "#5B3FD6"
-)
-
-card_total.pack(
-    side="left",
-    padx=(0,20)
-)
-
-
-card_agendada, lbl_agendada = criar_card(
-    cards,
-    "📅 Agendadas",
-    0,
-    "#F59E0B"
-)
-
-card_agendada.pack(
-    side="left",
-    padx=20
-)
-
-
-card_confirmada, lbl_confirmada = criar_card(
-    cards,
-    "✅ Confirmadas",
-    0,
-    "#22C55E"
-)
-
-card_confirmada.pack(
-    side="left",
-    padx=20
-)
-
-
-card_cancelada, lbl_cancelada = criar_card(
-    cards,
-    "❌ Canceladas",
-    0,
-    "#EF4444"
-)
-
-card_cancelada.pack(
-    side="left",
-    padx=(20,0)
-)
 
 # FUNÇÃO ATUALIZAR CARDS
 
@@ -559,6 +455,15 @@ def atualizar_cards():
         text=canceladas
     )
 
+# ===========================
+# LIMPAR CONTEÚDO
+# ===========================
+
+def limpar_conteudo():
+
+    for widget in conteudo_principal.winfo_children():
+        widget.destroy()
+
 # FUNÇÃO MOSTRAR DASHBOARD
 
 def mostrar_dashboard():
@@ -573,7 +478,90 @@ def mostrar_dashboard():
 
     titulo.pack(
         anchor="w",
-        pady=20
+        pady=(20,5)
+    )
+
+    subtitulo = ctk.CTkLabel(
+        conteudo_principal,
+        text="Resumo das cirurgias e indicadores do dia",
+        font=("Segoe UI",14),
+        text_color="#777777"
+    )
+
+    subtitulo.pack(
+        anchor="w",
+        pady=(0,20)
+    )
+
+    frame_cards = ctk.CTkFrame(
+        conteudo_principal,
+        fg_color="transparent"
+    )
+
+    frame_cards.pack(
+        anchor="w"
+    )
+
+    cards = ctk.CTkFrame(
+        frame_cards,
+        fg_color="transparent"
+    )
+
+    cards.pack(
+        anchor="w"
+    )
+
+    global lbl_total
+    global lbl_agendada
+    global lbl_confirmada
+    global lbl_cancelada
+
+    _, lbl_total = criar_card(
+        cards,
+        "🩺 Cirurgias",
+        0,
+        "#5B3FD6"
+    )
+
+    _.pack(
+        side="left",
+        padx=(0,20)
+    )
+
+    _, lbl_agendada = criar_card(
+        cards,
+        "📅 Agendadas",
+        0,
+        "#F59E0B"
+    )
+
+    _.pack(
+        side="left",
+        padx=20
+    )
+
+    _, lbl_confirmada = criar_card(
+        cards,
+        "✅ Confirmadas",
+        0,
+        "#22C55E"
+    )
+
+    _.pack(
+        side="left",
+        padx=20
+    )
+
+    _, lbl_cancelada = criar_card(
+        cards,
+        "❌ Canceladas",
+        0,
+        "#EF4444"
+    )
+
+    _.pack(
+        side="left",
+        padx=(20,0)
     )
 
     atualizar_cards()
@@ -582,14 +570,14 @@ def mostrar_dashboard():
 
 def abrir_dashboard():
 
-    atualizar_cards()
-
     frame_login.pack_forget()
 
     frame_dashboard.pack(
         fill="both",
         expand=True
     )
+
+    mostrar_dashboard()
 
 # FUNÇÃO MOSTRAR AGENDA
 
@@ -681,6 +669,75 @@ def mostrar_agenda():
             values=cirurgia
         )
 
+# FUNÇÃO MOSTRAR CALENDÁRIO
+
+def mostrar_calendario():
+
+    limpar_conteudo()
+
+    titulo = ctk.CTkLabel(
+        conteudo_principal,
+        text="🗓 Calendário",
+        font=("Segoe UI", 30, "bold")
+    )
+
+    titulo.pack(
+        anchor="w",
+        pady=20
+    )
+
+    ctk.CTkLabel(
+        conteudo_principal,
+        text="Em desenvolvimento...",
+        font=("Segoe UI", 18)
+    ).pack(pady=40)
+
+    # FUNÇÃO MOSTRAR USUÁRIOS
+
+def mostrar_usuarios():
+
+    limpar_conteudo()
+
+    titulo = ctk.CTkLabel(
+        conteudo_principal,
+        text="👥 Usuários",
+        font=("Segoe UI",30,"bold")
+    )
+
+    titulo.pack(
+        anchor="w",
+        pady=20
+    )
+
+    ctk.CTkLabel(
+        conteudo_principal,
+        text="Tela de usuários.",
+        font=("Segoe UI",18)
+    ).pack(pady=40)
+
+# FUNÇÃO MOSTRAR RELATÓRIOS
+
+def mostrar_relatorios():
+
+    limpar_conteudo()
+
+    titulo = ctk.CTkLabel(
+        conteudo_principal,
+        text="📄 Relatórios",
+        font=("Segoe UI",30,"bold")
+    )
+
+    titulo.pack(
+        anchor="w",
+        pady=20
+    )
+
+    ctk.CTkLabel(
+        conteudo_principal,
+        text="Tela de relatórios.",
+        font=("Segoe UI",18)
+    ).pack(pady=40)
+
 # ===========================
 # BOTÕES SIDEBAR
 # ===========================
@@ -708,31 +765,27 @@ def criar_botao_menu(texto, comando):
 
 criar_botao_menu(
     "📊 Dashboard",
-    mostrar_dashboard
+    lambda: mostrar_dashboard()
 )
-
 
 criar_botao_menu(
     "📅 Agenda",
-    mostrar_agenda
+    lambda: mostrar_agenda()
 )
-
 
 criar_botao_menu(
     "🗓 Calendário",
-    lambda: print("Calendário")
+    lambda: mostrar_calendario()
 )
-
 
 criar_botao_menu(
     "👥 Usuários",
-    lambda: print("Usuários")
+    lambda: mostrar_usuarios()
 )
-
 
 criar_botao_menu(
     "📄 Relatórios",
-    lambda: print("Relatórios")
+    lambda: mostrar_relatorios()
 )
 
 # ===========================
@@ -749,7 +802,7 @@ CAMINHO_LOGO = os.path.join(
 logo = ctk.CTkImage(
     light_image=Image.open(CAMINHO_LOGO),
     dark_image=Image.open(CAMINHO_LOGO),
-    size=(250,250)
+    size=(300,300)
 )
 
 ctk.CTkLabel(
@@ -770,7 +823,7 @@ ctk.CTkLabel(
     frame_login,
     text="Faça login para continuar",
     font=("Segoe UI",14),
-    text_color="#777777"
+    text_color="#070606"
 ).pack(
     pady=(0,30)
 )
