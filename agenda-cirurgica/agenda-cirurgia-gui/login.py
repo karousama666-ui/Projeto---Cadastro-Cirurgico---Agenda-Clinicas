@@ -25,6 +25,56 @@ CAMINHO_LOGO = os.path.join(
 ROXO = "#6750C8"
 FUNDO = "#A195EC"
 
+def verificar_login():
+
+    usuario_digitado = usuario.get()
+
+    senha_digitada = senha.get()
+
+    conexao = sqlite3.connect(BANCO)
+
+    cursor = conexao.cursor()
+
+    cursor.execute(
+        """
+        SELECT nivel
+        FROM usuarios
+        WHERE usuario = ?
+        AND senha = ?
+        """,
+        (
+            usuario_digitado,
+            senha_digitada
+        )
+    )
+
+    resultado = cursor.fetchone()
+
+    conexao.close()
+
+    if resultado:
+
+        app.destroy()
+
+        import novo_layout
+
+        app.after(
+    100,
+    lambda: (
+        app.destroy(),
+        novo_layout.iniciar_dashboard()
+    )
+)
+
+    else:
+
+        from tkinter import messagebox
+
+        messagebox.showerror(
+            "Erro",
+            "Usuário ou senha inválidos."
+        )
+
 # ======================
 # JANELA
 # ======================
@@ -124,7 +174,8 @@ botao = ctk.CTkButton(
     width=320,
     height=45,
     fg_color=ROXO,
-    hover_color="#5840B7"
+    hover_color="#5840B7",
+    command=verificar_login
 )
 
 botao.pack(
